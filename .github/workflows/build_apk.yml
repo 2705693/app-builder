@@ -29,36 +29,44 @@ jobs:
       - name: Recreate clean official Android host
         working-directory: ./android_app
         run: |
-          # 1. 清理旧手写配置，生成 100% 官方标准的 Gradle Wrapper 与 Android 宿主
+          # 1. 清理旧配置，重新生成纯正的官方 Android 宿主工程
           rm -rf android
           flutter create --platforms=android --org com.sd0739 .
 
-          # 2. 注入 AndroidManifest 权限与网络配置
+          # 2. 注入权限并锁定 minSdk 为 21
           python3 - <<'PY'
+          import glob
           from pathlib import Path
 
-          p = Path("android/app/src/main/AndroidManifest.xml")
-          content = p.read_text(encoding="utf-8")
-          perms = """
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
-              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-          """
-          content = content.replace("<application", perms + "\n    <application", 1)
-          content = content.replace("<application", '<application\n        android:usesCleartextTraffic="true"', 1)
-          p.write_text(content, encoding="utf-8")
-          print("AndroidManifest updated!")
+          # 注入 AndroidManifest 权限
+          for mf in glob.glob("android/app/src/main/AndroidManifest.xml"):
+              p = Path(mf)
+              c = p.read_text(encoding="utf-8")
+              perms = """
+                  <uses-permission android:name="android.permission.INTERNET" />
+                  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+                  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+                  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+                  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+                  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+              """
+              if "<uses-permission" not in c:
+                  c = c.replace("<application", perms + "\n    <application", 1)
+              if 'android:usesCleartextTraffic="true"' not in c:
+                  c = c.replace("<application", '<application\n        android:usesCleartextTraffic="true"', 1)
+              p.write_text(c, encoding="utf-8")
+              print("Updated permissions in:", mf)
 
-          bp = Path("android/app/build.gradle")
-          if bp.exists():
-              bs = bp.read_text(encoding="utf-8")
-              bs = bs.replace("minSdkVersion flutter.minSdkVersion", "minSdkVersion 21")
-              bs = bs.replace("minSdk = flutter.minSdkVersion", "minSdk = 21")
-              bp.write_text(bs, encoding="utf-8")
-              print("build.gradle minSdk updated to 21!")
+          # 强制将 minSdk 提高到 21（满足 video_player 与相册插件的最低要求）
+          for bg in glob.glob("android/app/build.gradle*"):
+              p = Path(bg)
+              s = p.read_text(encoding="utf-8")
+              s = s.replace("minSdkVersion flutter.minSdkVersion", "minSdkVersion 21")
+              s = s.replace("minSdkVersion = flutter.minSdkVersion", "minSdkVersion = 21")
+              s = s.replace("minSdk flutter.minSdkVersion", "minSdk 21")
+              s = s.replace("minSdk = flutter.minSdkVersion", "minSdk = 21")
+              p.write_text(s, encoding="utf-8")
+              print("Updated minSdk to 21 in:", bg)
           PY
 
       - name: Install dependencies
@@ -67,22 +75,9 @@ jobs:
 
       - name: Build APK
         working-directory: ./android_app
-        run: |
-          flutter build apk --release --verbose > build.log 2>&1 || {
-            echo "====== BUILD FAILED - LOG TAIL ======"
-            tail -n 250 build.log
-            exit 1
-          }
-
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: android_app/build.log
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: chaoji-huiwan-release-apk
