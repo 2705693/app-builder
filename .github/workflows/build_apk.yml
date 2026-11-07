@@ -5,9 +5,6 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,65 +29,9 @@ jobs:
       - name: Recreate clean official Android host
         working-directory: ./android_app
         run: |
-          # 1. 彻底重新生成纯官方的 Android 宿主
           rm -rf android
           flutter create --platforms=android --org com.sd0739 .
-
-          # 2. 注入配置与插件编译补丁
-          python3 - <<'PY'
-          import glob
-          from pathlib import Path
-
-          # 1. 注入 AndroidManifest 权限
-          for mf in glob.glob("android/app/src/main/AndroidManifest.xml"):
-              p = Path(mf)
-              c = p.read_text(encoding="utf-8")
-              perms = """
-                  <uses-permission android:name="android.permission.INTERNET" />
-                  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-                  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-                  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
-                  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-                  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-              """
-              if "<uses-permission" not in c:
-                  c = c.replace("<application", perms + "\n    <application", 1)
-              if 'android:usesCleartextTraffic="true"' not in c:
-                  c = c.replace("<application", '<application\n        android:usesCleartextTraffic="true"', 1)
-              p.write_text(c, encoding="utf-8")
-              print("Updated permissions in:", mf)
-
-          # 2. 确保 app 的 minSdk 为 21, compileSdkVersion 为 34
-          for bg in glob.glob("android/app/build.gradle*"):
-              p = Path(bg)
-              s = p.read_text(encoding="utf-8")
-              s = s.replace("minSdkVersion flutter.minSdkVersion", "minSdkVersion 21")
-              s = s.replace("minSdkVersion = flutter.minSdkVersion", "minSdkVersion = 21")
-              s = s.replace("minSdk flutter.minSdkVersion", "minSdk 21")
-              s = s.replace("minSdk = flutter.minSdkVersion", "minSdk = 21")
-              p.write_text(s, encoding="utf-8")
-              print("Updated minSdk to 21 in:", bg)
-
-          # 3. 根 build.gradle 注入 subprojects compileSdkVersion 补丁（解决 gal 等插件的 compileSdkVersion is not specified 报错）
-          root_bg = Path("android/build.gradle")
-          if root_bg.exists():
-              text = root_bg.read_text(encoding="utf-8")
-              patch = """
-
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
-                compileSdkVersion 34
-                buildToolsVersion '34.0.0'
-            }
-        }
-    }
-}
-"""
-              root_bg.write_text(text + patch, encoding="utf-8")
-              print("Injected subprojects compileSdkVersion patch to android/build.gradle!")
-          PY
+          python3 fix_android.py
 
       - name: Install dependencies
         working-directory: ./android_app
@@ -98,13 +39,7 @@ subprojects {
 
       - name: Build APK
         working-directory: ./android_app
-        run: |
-          if ! flutter build apk --release > build.log 2>&1; then
-            echo "::error title=Flutter Build Failed::$(tail -n 25 build.log | tr '\n' ' ')"
-            echo "====== FULL BUILD LOG ======"
-            cat build.log
-            exit 1
-          fi
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
