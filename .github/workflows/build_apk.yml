@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -61,3 +61,15 @@ jobs:
         with:
           name: yitie-quying-release-apk
           path: android_app/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Publish APK to GitHub Release
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android_app/build/app/outputs/flutter-apk/app-release.apk "一贴取影.apk"
+          git tag -f android-latest "$GITHUB_SHA"
+          git push origin refs/tags/android-latest --force
+          gh release view android-latest >/dev/null 2>&1 || \
+            gh release create android-latest --title "一贴取影 Android 最新版" --notes "由 GitHub Actions 自动构建。"
+          gh release upload android-latest "一贴取影.apk" --clobber
