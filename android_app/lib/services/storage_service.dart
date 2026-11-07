@@ -6,6 +6,7 @@ import '../models/history_item.dart';
 class StorageService {
   static const String _keyHistory = 'parse_history_list';
   static const String _keyUserId = 'user_unique_id';
+  static const String _keyLegalAccepted = 'legal_agreement_accepted_v1';
   static final ValueNotifier<int> historyVersion = ValueNotifier<int>(0);
 
   // 1. 获取或生成稳定的设备用户唯一标识
@@ -56,5 +57,15 @@ class StorageService {
     final sp = await SharedPreferences.getInstance();
     await sp.remove(_keyHistory);
     historyVersion.value++;
+  }
+
+  static Future<bool> isLegalAccepted() async {
+    final sp = await SharedPreferences.getInstance();
+    return sp.getBool(_keyLegalAccepted) ?? false;
+  }
+
+  static Future<void> acceptLegalAgreement() async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setBool(_keyLegalAccepted, true);
   }
 }

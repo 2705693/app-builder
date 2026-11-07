@@ -1,4 +1,5 @@
 const userUtil = require('../../utils/user')
+const { legal } = require('../../data/content')
 
 Page({
   data: {
@@ -13,6 +14,8 @@ Page({
     cardKey: '',
     redeeming: false,
     showPrivacyModal: false,
+    showAgreementModal: false,
+    legal,
     showTutorialModal: false,
     showPlatformsModal: false,
     showRedeemModal: false,
@@ -53,6 +56,14 @@ Page({
 
   closePrivacyModal() {
     this.setData({ showPrivacyModal: false })
+  },
+
+  openAgreementModal() {
+    this.setData({ showAgreementModal: true })
+  },
+
+  closeAgreementModal() {
+    this.setData({ showAgreementModal: false })
   },
 
   openTutorialModal() {
@@ -165,7 +176,7 @@ Page({
   onClearHistory() {
     wx.showModal({
       title: '清空历史记录',
-      content: '确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响服务器日志和剩余次数。',
+      content: '确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响剩余次数。',
       confirmColor: '#e02020',
       cancelColor: '#8f959e',
       confirmText: '确认清空',

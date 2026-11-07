@@ -8,7 +8,7 @@
   <!-- 声明与合规提示 -->
   <view class="compliance-badge">
     <text class="info-icon">ⓘ</text>
-    <text class="compliance-text">仅处理本人或已获授权的视频</text>
+    <text class="compliance-text">{{copyrightNotice}}</text>
   </view>
 
   <!-- 支持的平台徽标条 -->
@@ -84,14 +84,12 @@
   </view>
 
   <!-- 开始提取主按钮 -->
-  <button 
-    class="parse-submit-btn" 
-    loading="{{parsing}}" 
-    disabled="{{parsing}}" 
-    bindtap="startParse"
-  >
-    {{ parsing ? '正在提取中...' : '开始提取' }}
-  </button>
+  <view class="primary-action-row">
+    <button class="parse-submit-btn" loading="{{parsing}}" disabled="{{parsing}}" bindtap="startParse">
+      {{ parsing ? '正在提取中...' : '开始提取' }}
+    </button>
+    <button class="local-video-btn" disabled="{{parsing}}" bindtap="chooseLocalVideo">选择本地视频</button>
+  </view>
 
   <button class="image-repair-entry" bindtap="openImageRepair">图片局部修复</button>
 

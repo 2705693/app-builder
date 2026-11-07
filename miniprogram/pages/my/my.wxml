@@ -66,6 +66,14 @@
       <text class="menu-arrow">></text>
     </view>
 
+    <view class="menu-item" bindtap="openAgreementModal">
+      <view class="menu-left">
+        <text class="menu-icon">📄</text>
+        <text class="menu-label">用户协议</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
     <view class="menu-item no-border" bindtap="openRedeemModal">
       <view class="menu-left">
         <text class="menu-icon">🎟️</text>
@@ -125,17 +133,23 @@
     <view class="modal-box" catchtap="preventBubble">
       <view class="modal-title">隐私与使用说明</view>
       <view class="modal-body privacy-body">
-        <view class="privacy-p">仅在你点击粘贴时读取剪贴板，在点击保存时请求相册权限。</view>
-        <view class="privacy-p">真实服务使用微信登录标识记录额度，不要求手机号、头像或昵称。</view>
-        <view class="privacy-p">临时文件最多保存24小时，服务器提取与操作日志最多保留30天；「清空历史记录」仅清除手机本地记录。</view>
-        <view class="privacy-p">视频号链接会发送给腾讯元宝以进行解析；反馈会提交给开发者。</view>
-        <view class="privacy-p">请仅处理本人或已获授权的内容。</view>
+        <view class="privacy-p" wx:for="{{legal.privacySummary}}" wx:key="*this">{{item}}</view>
         <view class="privacy-contact">
           <view class="contact-label">隐私联系邮箱：</view>
           <view class="contact-email" bindtap="copyEmail">sd0739@sd0739.top</view>
         </view>
       </view>
       <view class="modal-btn-confirm" bindtap="closePrivacyModal">知道了</view>
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{ showAgreementModal }}" bindtap="closeAgreementModal">
+    <view class="modal-box" catchtap="preventBubble">
+      <view class="modal-title">用户协议与知识产权说明</view>
+      <scroll-view class="modal-body" scroll-y>
+        <view class="privacy-p" wx:for="{{legal.userAgreement}}" wx:key="*this">{{index + 1}}. {{item}}</view>
+      </scroll-view>
+      <view class="modal-btn-confirm" bindtap="closeAgreementModal">我知道了</view>
     </view>
   </view>
 

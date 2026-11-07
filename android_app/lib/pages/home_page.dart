@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/parse_result.dart';
 import '../models/history_item.dart';
@@ -26,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _inputCtrl = TextEditingController();
   final ApiService _apiService = ApiService();
   final DownloadService _downloadService = DownloadService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   bool _parsing = false;
   ParseResult? _result;
@@ -34,6 +37,7 @@ class _HomePageState extends State<HomePage> {
 
   int _remainingQuota = 10;
   bool _isVip = false;
+  bool _isLocalVideo = false;
 
   final List<String> _platforms = [
     '抖音', '小红书', '快手', 'B站', '视频号',
@@ -44,6 +48,32 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserInfo();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureLegalAccepted());
+  }
+
+  Future<bool> _ensureLegalAccepted() async {
+    if (await StorageService.isLegalAccepted()) return true;
+    if (!mounted) return false;
+    final accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('重要版权提示'),
+        content: const Text(
+          '仅可处理本人享有著作权或已取得权利人授权的素材。未经许可，不得删除他人作品的水印、作者标识或权利管理信息，不得搬运、传播或商用侵权内容。\n\n继续使用即表示您已阅读并同意“我的”页面中的《用户协议》和《隐私政策》。',
+          style: TextStyle(height: 1.6),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('暂不使用')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('同意并继续')),
+        ],
+      ),
+    );
+    if (accepted == true) {
+      await StorageService.acceptLegalAgreement();
+      return true;
+    }
+    return false;
   }
 
   void _loadUserInfo() async {
@@ -83,8 +113,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // 2. 开始解析
+  // 2. 开始提取
   void _startParse() async {
+    if (!await _ensureLegalAccepted()) return;
     final text = _inputCtrl.text.trim();
     if (text.isEmpty) {
       Fluttertoast.showToast(msg: '请先粘贴或输入视频/图集链接');
@@ -95,6 +126,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _parsing = true;
       _result = null;
+      _isLocalVideo = false;
     });
     _disposePlayer();
 
@@ -135,9 +167,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _initVideoPlayer(String url) async {
+  void _initVideoPlayer(String url, {bool local = false}) async {
     _disposePlayer();
-    _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(url));
+    _videoPlayerController = local
+        ? VideoPlayerController.file(File(url))
+        : VideoPlayerController.networkUrl(Uri.parse(url));
     await _videoPlayerController!.initialize();
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController!,
@@ -151,6 +185,27 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     if (mounted) setState(() {});
+  }
+
+  Future<void> _pickLocalVideo() async {
+    if (!await _ensureLegalAccepted()) return;
+    final picked = await _imagePicker.pickVideo(source: ImageSource.gallery);
+    if (picked == null || !mounted) return;
+    final result = ParseResult(
+      platform: '本地素材',
+      type: 'video',
+      title: '已选择本地视频',
+      author: '',
+      coverUrl: '',
+      videoUrl: picked.path,
+      originUrl: picked.path,
+      images: const [],
+    );
+    setState(() {
+      _result = result;
+      _isLocalVideo = true;
+    });
+    await _initVideoPlayer(picked.path, local: true);
   }
 
   void _showErrorDialog(String msg) {
@@ -173,6 +228,15 @@ class _HomePageState extends State<HomePage> {
   // 3. 原生保存视频到系统相册
   Future<void> _saveVideoToAlbum() async {
     if (_result == null || _result!.videoUrl.isEmpty) return;
+    if (_isLocalVideo) {
+      try {
+        await _downloadService.saveLocalVideo(_result!.videoUrl);
+        Fluttertoast.showToast(msg: '视频已保存到手机相册');
+      } catch (e) {
+        Fluttertoast.showToast(msg: '保存失败: $e');
+      }
+      return;
+    }
 
     double currentProgress = 0.0;
     String currentSizeText = '';
@@ -247,6 +311,10 @@ class _HomePageState extends State<HomePage> {
   // 5. 复制下载链接
   void _copyLink() {
     if (_result == null) return;
+    if (_isLocalVideo) {
+      Fluttertoast.showToast(msg: '本地视频没有网络下载链接');
+      return;
+    }
     final url = _result!.videoUrl.isNotEmpty ? _result!.videoUrl : (_result!.images.isNotEmpty ? _result!.images.first : '');
     Clipboard.setData(ClipboardData(text: url));
     Fluttertoast.showToast(msg: '下载链接已复制到剪贴板');
@@ -268,6 +336,19 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDF7F0),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFD4EBDC)),
+              ),
+              child: const Text(
+                '仅可处理本人享有著作权或已取得权利人授权的素材。不得擅自删除他人作品的水印、作者标识或权利管理信息。',
+                style: TextStyle(fontSize: 12, height: 1.5, color: Color(0xFF1F6F43)),
+              ),
+            ),
+            const SizedBox(height: 14),
             // 平台支持标签栏
             Wrap(
               spacing: 8,
@@ -327,10 +408,12 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
 
-            // 开始解析按钮
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
                 onPressed: _parsing ? null : _startParse,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF127C44),
@@ -346,8 +429,26 @@ class _HomePageState extends State<HomePage> {
                           Text('正在深度提取中...', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                         ],
                       )
-                    : const Text('开始解析', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
+                    : const Text('开始提取', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: _parsing ? null : _pickLocalVideo,
+                    icon: const Icon(Icons.video_library_outlined, size: 17),
+                    label: const Text('本地视频'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF127C44),
+                      backgroundColor: const Color(0xFFE8F3EC),
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
 
@@ -357,7 +458,7 @@ class _HomePageState extends State<HomePage> {
               child: OutlinedButton.icon(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageRepairPage())),
                 icon: const Icon(Icons.auto_fix_high_rounded, size: 16, color: Color(0xFF6246A8)),
-                label: const Text('图片局部修复 (消除水印/路人)', style: TextStyle(color: Color(0xFF6246A8), fontSize: 13, fontWeight: FontWeight.bold)),
+                label: const Text('图片局部修复（擦除多余元素）', style: TextStyle(color: Color(0xFF6246A8), fontSize: 13, fontWeight: FontWeight.bold)),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: const Color(0xFFF2EDFF),
                   side: BorderSide.none,

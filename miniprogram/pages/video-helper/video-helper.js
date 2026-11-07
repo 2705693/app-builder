@@ -1,6 +1,7 @@
 // video-helper.js
 const { parseVideoText } = require('../../utils/video-link')
 const userUtil = require('../../utils/user')
+const { legal } = require('../../data/content')
 
 const PARSE_SERVER_API = 'https://sy.sd0739.top/api/parse'
 
@@ -16,7 +17,14 @@ Page({
     remainingQuota: 10,
     bonusQuota: 0,
     isVip: false,
-    result: null
+    result: null,
+    copyrightNotice: legal.copyrightNotice
+  },
+
+  onLoad() {
+    if (!wx.getStorageSync('legal_agreement_accepted_v1')) {
+      this.showLegalAgreement()
+    }
   },
 
   onShow() {
@@ -68,6 +76,48 @@ Page({
     this.setData({ rawText: '', result: null })
   },
 
+  showLegalAgreement() {
+    wx.showModal({
+      title: '重要版权提示',
+      content: legal.copyrightNotice + '\n\n继续使用即表示您已阅读并同意“我的”页面中的《用户协议》和《隐私政策》。',
+      confirmText: '同意并继续',
+      cancelText: '暂不使用',
+      confirmColor: '#127c44',
+      success: res => {
+        if (res.confirm) wx.setStorageSync('legal_agreement_accepted_v1', true)
+      }
+    })
+  },
+
+  ensureLegalAccepted() {
+    if (wx.getStorageSync('legal_agreement_accepted_v1')) return true
+    this.showLegalAgreement()
+    return false
+  },
+
+  chooseLocalVideo() {
+    if (!this.ensureLegalAccepted()) return
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['video'],
+      sourceType: ['album'],
+      success: res => {
+        const file = res.tempFiles && res.tempFiles[0]
+        if (!file || !file.tempFilePath) return
+        this.setData({
+          result: {
+            type: 'video',
+            platform: '本地素材',
+            title: '已选择本地视频',
+            videoUrl: file.tempFilePath,
+            coverUrl: file.thumbTempFilePath || '',
+            isLocal: true
+          }
+        })
+      }
+    })
+  },
+
   openImageRepair() {
     wx.navigateTo({ url: '/pages/image-repair/image-repair' })
   },
@@ -102,6 +152,7 @@ Page({
 
   // 开始提取核心流程
   startParse() {
+    if (!this.ensureLegalAccepted()) return
     const { rawText, remainingQuota, isVip } = this.data
     if (!rawText.trim()) {
       wx.showToast({ title: '请先粘贴分享链接或文案', icon: 'none' })
@@ -229,6 +280,18 @@ Page({
   saveToAlbum() {
     const { result, saving, downloading } = this.data
     if (!result || !result.videoUrl) return
+    if (result.isLocal) {
+      wx.saveVideoToPhotosAlbum({
+        filePath: result.videoUrl,
+        success: () => wx.showToast({ title: '已保存到相册', icon: 'success' }),
+        fail: err => {
+          if (!String(err.errMsg || '').includes('cancel')) {
+            wx.showToast({ title: '保存失败，请检查相册权限', icon: 'none' })
+          }
+        }
+      })
+      return
+    }
 
     // 如果已经在下载中，再次点击直接触发停止
     if (downloading) {

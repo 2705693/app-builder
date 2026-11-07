@@ -23,6 +23,7 @@ dependencies:
   # 原生相册极速保存（直接存入系统相册 DCIM 并刷新图库）
   # 5.x 使用 Android Flutter embedding v2；3.x 仍引用已移除的 Registrar API。
   image_gallery_saver_plus: ^5.1.1
+  image_picker: ^1.1.2
 
   # 视频播放器与全屏控制器
   video_player: ^2.9.2

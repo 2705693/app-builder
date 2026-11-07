@@ -88,7 +88,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Text('1. 在抖音、小红书、B站等 App 中点击【分享】→【复制链接】；', style: TextStyle(fontSize: 14, height: 1.5)),
             SizedBox(height: 8),
-            Text('2. 打开本 App，点击【一键粘贴】，然后点击【开始解析】；', style: TextStyle(fontSize: 14, height: 1.5)),
+            Text('2. 打开本 App，点击【一键粘贴】，然后点击【开始提取】；', style: TextStyle(fontSize: 14, height: 1.5)),
             SizedBox(height: 8),
             Text('3. 解析成功后，点击【保存到相册】即可极速下载无水印原画视频/图集。', style: TextStyle(fontSize: 14, height: 1.5)),
           ],
@@ -202,9 +202,9 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Text(
             '仅在你主动点击粘贴时读取剪贴板，在点击保存时请求相册或文件权限。\n\n'
             '服务使用本机生成的专属设备 ID 记录额度，不要求手机号、头像、昵称或通讯录。\n\n'
-            '临时文件最多保存24小时，服务器提取与操作日志最多保留30天；“清空历史记录”仅清除手机本地记录。\n\n'
-            '视频号链接会发送给腾讯元宝以进行解析；意见反馈会提交给开发者。\n\n'
-            '请仅处理本人或已获授权的内容。\n\n'
+            '图片修复等云端任务会将您主动选择的素材加密传输至服务器临时处理；视频号链接会发送给腾讯元宝完成处理。临时素材最多保存24小时。\n\n'
+            '我们不会将素材用于AI训练、对外展示或分发，法律法规另有要求或您另行授权的除外。\n\n'
+            '您可以撤回系统权限或清空本地历史；清空本地历史不影响剩余次数。\n\n'
             '隐私联系邮箱：sd0739@sd0739.top',
             style: TextStyle(fontSize: 14, height: 1.6, color: Color(0xFF405047)),
           ),
@@ -216,12 +216,33 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _showUserAgreement() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('用户协议与知识产权说明', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: const SingleChildScrollView(
+          child: Text(
+            '1. 使用本服务前，您承诺对所处理的图片、视频享有著作权，或已经取得权利人的合法授权。\n\n'
+            '2. 不得处理未获授权的第三方素材，不得擅自删除、遮盖他人作品上的水印、作者标识或权利管理信息，也不得传播、搬运或商用侵权内容。\n\n'
+            '3. 因用户处理无合法权属的素材而侵犯著作权、商标权、肖像权等权益的，相应责任由用户承担。\n\n'
+            '4. 本服务仅提供内容处理技术，不对素材权属进行实质审查。请仅处理本人或已获授权的内容。\n\n'
+            '5. 权利人投诉请将权属证明、侵权位置等材料发送至 sd0739@sd0739.top。收到合格通知后，我们将依法核查并采取必要措施。',
+            style: TextStyle(fontSize: 14, height: 1.6, color: Color(0xFF405047)),
+          ),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('我知道了'))],
+      ),
+    );
+  }
+
   void _confirmClearHistory() {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('清空历史记录', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-        content: const Text('确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响服务器日志和剩余次数。'),
+        content: const Text('确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响剩余次数。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           TextButton(
@@ -362,6 +383,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.shield_outlined,
                     title: '隐私政策',
                     onTap: _showPrivacyPolicy,
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
+                    icon: Icons.description_outlined,
+                    title: '用户协议',
+                    onTap: _showUserAgreement,
                   ),
                   const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
                   _MenuItem(

@@ -156,8 +156,15 @@ page {
   padding: 10rpx 16rpx;
 }
 
-/* 开始解析大按钮 */
+/* 主要操作 */
+.primary-action-row {
+  display: flex;
+  gap: 18rpx;
+  margin-bottom: 24rpx;
+}
+
 .parse-submit-btn {
+  flex: 1;
   background-color: #127c44;
   color: #ffffff;
   font-size: 32rpx;
@@ -166,7 +173,20 @@ page {
   line-height: 96rpx;
   border-radius: 22rpx;
   box-shadow: 0 10rpx 24rpx rgba(18, 124, 68, 0.28);
-  margin-bottom: 24rpx;
+  margin: 0;
+}
+
+.local-video-btn {
+  width: 230rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  margin: 0;
+  padding: 0 12rpx;
+  border-radius: 22rpx;
+  background: #e8f3ec;
+  color: #127c44;
+  font-size: 27rpx;
+  font-weight: 700;
 }
 
 .parse-submit-btn[disabled] {

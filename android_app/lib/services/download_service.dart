@@ -13,6 +13,16 @@ class DownloadService {
 
   bool get isDownloading => _isDownloading;
 
+  Future<bool> saveLocalVideo(String filePath) async {
+    final file = File(filePath);
+    if (!await file.exists()) throw Exception('本地视频文件不存在');
+    final result = await ImageGallerySaverPlus.saveFile(filePath);
+    if (result is Map && result['isSuccess'] == false) {
+      throw Exception('相册写入失败，请检查权限');
+    }
+    return true;
+  }
+
   // 停止 / 取消当前下载任务
   void cancelDownload() {
     if (_cancelToken != null && !_cancelToken!.isCancelled) {

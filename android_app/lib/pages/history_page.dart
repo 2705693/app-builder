@@ -49,7 +49,7 @@ class _HistoryPageState extends State<HistoryPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('清空历史记录', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        content: const Text('确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响服务器日志和剩余次数。'),
+        content: const Text('确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响剩余次数。'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
           TextButton(
