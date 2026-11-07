@@ -40,7 +40,7 @@ class StorageService {
       // 无网络或系统不支持时继续使用本地 ID，不影响基本功能。
     }
     _resolvedUserId = uid;
-    return uid;
+    return uid!;
   }
 
   static Future<void> setUserId(String userId) async {
