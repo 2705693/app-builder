@@ -445,7 +445,7 @@
                 submitRedeemBtn.textContent = '兑换中...';
 
                 try {
-                    const resp = await fetch(`${config.apiBase}/api/redeem`, {
+                    const resp = await fetch(`${config.apiBase}/api/user/redeem`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -454,13 +454,13 @@
                         })
                     });
                     const res = await resp.json();
-                    if (res.code === 0) {
+                    if (resp.ok && res.code === 0) {
                         showToast(res.message || '🎉 恭喜，卡密兑换成功！');
                         if (modalRedeem) modalRedeem.style.display = 'none';
                         input.value = '';
                         fetchUserInfo();
                     } else {
-                        showToast(res.message || '卡密无效或已被使用');
+                        showToast(res.detail || res.message || '卡密无效或已被使用');
                     }
                 } catch (e) {
                     showToast('网络错误，兑换失败');

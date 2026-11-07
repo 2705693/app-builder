@@ -3,7 +3,7 @@
  * Plugin Name: 钞机汇玩 - 全网无水印视频与图集提取神器
  * Plugin URI: https://www.sd0739.top
  * Description: 聚合抖音、快手、小红书、B站、TikTok、YouTube等12+主流平台无水印视频与图集极速提取，集成在线播放器、国内千兆流式下载、本地历史记录、额度管理与卡密兑换。
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: 2705693
  * Author URI: https://www.sd0739.top
  * License: GPL v2 or later
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('CHAOJI_HW_VERSION', '1.0.2');
+define('CHAOJI_HW_VERSION', '1.0.3');
 define('CHAOJI_HW_DIR', plugin_dir_path(__FILE__));
 define('CHAOJI_HW_URL', plugin_dir_url(__FILE__));
 
