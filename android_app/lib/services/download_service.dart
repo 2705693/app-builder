@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:gal/gal.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 
 typedef DownloadProgressCallback = void Function(int received, int total, double progress);
@@ -31,11 +32,10 @@ class DownloadService {
 
     try {
       // 1. 检查或申请相册访问与写入权限
-      bool hasAccess = await Gal.hasAccess();
-      if (!hasAccess) {
-        hasAccess = await Gal.requestAccess();
-        if (!hasAccess) {
-          throw Exception('未授予相册存储权限，无法保存视频');
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
         }
       }
 
@@ -58,7 +58,7 @@ class DownloadService {
       );
 
       // 4. 将临时文件写入系统原生相册
-      await Gal.putVideo(tempFilePath, album: '钞机汇玩');
+      await ImageGallerySaverPlus.saveFile(tempFilePath);
 
       // 5. 清理临时文件
       final file = File(tempFilePath);
@@ -88,11 +88,10 @@ class DownloadService {
     required List<String> imageUrls,
     required Function(int current, int total) onProgress,
   }) async {
-    bool hasAccess = await Gal.hasAccess();
-    if (!hasAccess) {
-      hasAccess = await Gal.requestAccess();
-      if (!hasAccess) {
-        throw Exception('未授予相册存储权限');
+    if (Platform.isAndroid) {
+      var status = await Permission.storage.status;
+      if (!status.isGranted) {
+        await Permission.storage.request();
       }
     }
 
@@ -104,7 +103,7 @@ class DownloadService {
         final url = imageUrls[i];
         final tempPath = '${tempDir.path}/img_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
         await _dio.download(url, tempPath);
-        await Gal.putImage(tempPath, album: '钞机汇玩');
+        await ImageGallerySaverPlus.saveFile(tempPath);
         final file = File(tempPath);
         if (await file.exists()) {
           await file.delete();

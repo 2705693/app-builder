@@ -31,11 +31,15 @@ for bg in glob.glob("android/app/build.gradle*"):
     p.write_text(s, encoding="utf-8")
     print("Updated minSdk to 21 in:", bg)
 
-# 3. 根 build.gradle 注入 subprojects compileSdkVersion 补丁（彻底解决 gal 等第三方插件的 compileSdkVersion is not specified 报错）
+# 3. 确保根 build.gradle 存在并注入 subprojects compileSdkVersion 补丁
 root_bg = Path("android/build.gradle")
-if root_bg.exists():
-    text = root_bg.read_text(encoding="utf-8")
-    patch = """
+patch = """
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
 subprojects {
     afterEvaluate { project ->
@@ -48,5 +52,9 @@ subprojects {
     }
 }
 """
-    root_bg.write_text(text + patch, encoding="utf-8")
-    print("Injected subprojects compileSdkVersion patch to android/build.gradle!")
+if root_bg.exists():
+    text = root_bg.read_text(encoding="utf-8")
+    root_bg.write_text(text + "\n" + patch, encoding="utf-8")
+else:
+    root_bg.write_text(patch, encoding="utf-8")
+print("Injected subprojects compileSdkVersion patch to android/build.gradle!")

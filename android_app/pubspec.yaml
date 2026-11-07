@@ -21,7 +21,7 @@ dependencies:
   permission_handler: ^11.3.1
 
   # 原生相册极速保存（直接存入系统相册 DCIM 并刷新图库）
-  gal: ^2.3.1
+  image_gallery_saver_plus: ^3.0.4
 
   # 视频播放器与全屏控制器
   video_player: ^2.9.2

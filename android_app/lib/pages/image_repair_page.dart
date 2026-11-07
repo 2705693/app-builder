@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gal/gal.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 
@@ -143,7 +143,7 @@ class _ImageRepairPageState extends State<ImageRepairPage> {
       final tempDir = await getTemporaryDirectory();
       final path = '${tempDir.path}/repaired_${DateTime.now().millisecondsSinceEpoch}.jpg';
       await Dio().download(_repairedResultUrl!, path);
-      await Gal.putImage(path, album: '钞机汇玩');
+      await ImageGallerySaverPlus.saveFile(path);
       Fluttertoast.showToast(msg: '已成功保存修复图片到手机相册！');
     } catch (e) {
       Fluttertoast.showToast(msg: '保存失败: $e');
