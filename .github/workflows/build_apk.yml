@@ -59,7 +59,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: yitie-quying-release-apk
+          name: yilian-quying-release-apk
           path: android_app/build/app/outputs/flutter-apk/app-release.apk
 
       - name: Publish APK to GitHub Release
@@ -67,13 +67,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp android_app/build/app/outputs/flutter-apk/app-release.apk "yilian-quying-v1.0.1.apk"
+          cp android_app/build/app/outputs/flutter-apk/app-release.apk "yilian-quying-v1.0.2.apk"
           git tag -f android-latest "$GITHUB_SHA"
           git push origin refs/tags/android-latest --force
           gh release view android-latest >/dev/null 2>&1 || \
-            gh release create android-latest --title "一贴取影 Android 最新版" --notes "由 GitHub Actions 自动构建。"
+            gh release create android-latest --title "一链取影 Android 最新版" --notes "由 GitHub Actions 自动构建。"
           gh release view android-latest --json assets --jq '.assets[].name' | \
             while read -r asset; do
               case "$asset" in *.apk) gh release delete-asset android-latest "$asset" --yes ;; esac
             done
-          gh release upload android-latest "yilian-quying-v1.0.1.apk" --clobber
+          gh release edit android-latest --title "一链取影 Android 最新版"
+          gh release upload android-latest "yilian-quying-v1.0.2.apk" --clobber

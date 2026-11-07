@@ -18,7 +18,7 @@ for mf in glob.glob("android/app/src/main/AndroidManifest.xml"):
         c = c.replace("<application", perms + "\n    <application", 1)
     if 'android:usesCleartextTraffic="true"' not in c:
         c = c.replace("<application", '<application\n        android:usesCleartextTraffic="true"', 1)
-    c = re.sub(r'android:label="[^"]*"', 'android:label="一贴取影"', c, count=1)
+    c = re.sub(r'android:label="[^"]*"', 'android:label="一链取影"', c, count=1)
     p.write_text(c, encoding="utf-8")
     print("Updated permissions in:", mf)
 

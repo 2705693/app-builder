@@ -23,7 +23,7 @@ class ChaojiHuiwanApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '一贴取影',
+      title: '一链取影',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

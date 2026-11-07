@@ -241,7 +241,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   builder: (ctx) => AlertDialog(
                     title: const Text('恢复码已生成'),
                     content: SelectableText('$code\n\n已自动复制。新生成恢复码后，旧恢复码将失效。'),
-                    actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('我已保存'))],
+                    actions: [
+                      TextButton(
+                        onPressed: () async {
+                          await Clipboard.setData(ClipboardData(text: code));
+                          Fluttertoast.showToast(msg: '恢复码已复制');
+                        },
+                        child: const Text('一键复制'),
+                      ),
+                      TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('我已保存')),
+                    ],
                   ),
                 );
               } catch (e) {
@@ -513,7 +522,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             // 版本信息
             const Text(
-              '一贴取影 v1.0.1 (Android版)\n多媒体内容提取与图片修复工具',
+              '一链取影 v1.0.2 (Android版)\n多媒体内容提取与图片修复工具',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: Color(0xFFA5B8AC), height: 1.6),
             ),
