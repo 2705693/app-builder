@@ -1,0 +1,41 @@
+<view class="container">
+  <!-- 头部汇总与清空按钮 -->
+  <view class="header-bar" wx:if="{{ list.length > 0 }}">
+    <text class="count-text">共 {{ list.length }} 条提取记录</text>
+    <text class="clear-btn" bindtap="handleClear">清空记录</text>
+  </view>
+
+  <!-- 列表区 -->
+  <view class="history-list" wx:if="{{ list.length > 0 }}">
+    <view class="history-card" wx:for="{{ list }}" wx:key="id">
+      <view class="card-main">
+        <!-- 封面图 -->
+        <image class="cover-img" src="{{ item.coverUrl || '/assets/tabbar/home.png' }}" mode="aspectFill" bindtap="previewMedia" data-item="{{ item }}" />
+        
+        <!-- 详情 -->
+        <view class="info-box">
+          <view class="tag-row">
+            <text class="platform-tag">{{ item.platform }}</text>
+            <text class="type-tag">{{ item.type === 'images' ? '图集' : '视频' }}</text>
+            <text class="date-text">{{ item.createdAt }}</text>
+          </view>
+          <text class="title-text">{{ item.title }}</text>
+          
+          <!-- 操作按钮行 -->
+          <view class="action-row">
+            <button class="act-btn btn-copy" size="mini" bindtap="copyLink" data-url="{{ item.videoUrl }}">复制下载链接</button>
+            <button class="act-btn btn-save" size="mini" bindtap="saveToAlbum" data-item="{{ item }}">保存相册</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-box" wx:else>
+    <view class="empty-icon">📂</view>
+    <text class="empty-title">暂无提取记录</text>
+    <text class="empty-sub">成功提取的视频或图集会自动保存在这里</text>
+    <button class="go-parse-btn" bindtap="goToParse">去提取视频</button>
+  </view>
+</view>

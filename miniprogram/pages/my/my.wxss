@@ -1,0 +1,500 @@
+page {
+  background-color: #f6f8f7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1f2329;
+}
+
+.container {
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+/* 顶部可用次数卡片 (图1风格) */
+.quota-card {
+  background: #ebf7ef;
+  border: 1rpx solid #d4ebd9;
+  border-radius: 24rpx;
+  padding: 34rpx 36rpx 28rpx;
+  margin-bottom: 24rpx;
+}
+
+.quota-title {
+  font-size: 28rpx;
+  color: #1a5e37;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.quota-num-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.quota-num {
+  font-size: 76rpx;
+  font-weight: 700;
+  color: #127c44;
+  line-height: 1.1;
+  letter-spacing: -1rpx;
+}
+
+.quota-unit {
+  font-size: 30rpx;
+  color: #127c44;
+  margin-left: 8rpx;
+  font-weight: 500;
+}
+
+.quota-sub {
+  font-size: 24rpx;
+  color: #5c8b6d;
+  margin-top: 12rpx;
+}
+
+.quota-divider {
+  height: 1rpx;
+  background: #d5ecd8;
+  margin: 26rpx 0 22rpx;
+}
+
+.ad-reward-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ad-reward-label {
+  display: flex;
+  align-items: center;
+  font-size: 26rpx;
+  color: #1c5c38;
+  font-weight: 500;
+}
+
+.info-circle {
+  margin-left: 8rpx;
+  font-size: 24rpx;
+  color: #5c8b6d;
+}
+
+.badge-disabled {
+  background: #dfe8e2;
+  color: #83948b;
+  font-size: 22rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 20rpx;
+  font-weight: 500;
+}
+
+/* 分享小程序卡片 */
+.user-id-row {
+  display: flex;
+  align-items: center;
+  min-height: 58rpx;
+}
+
+.user-id-label {
+  color: #557263;
+  font-size: 24rpx;
+}
+
+.user-id-value {
+  flex: 1;
+  margin-left: 18rpx;
+  color: #174f34;
+  font-family: monospace;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.user-id-copy {
+  padding: 6rpx 16rpx;
+  border-radius: 18rpx;
+  color: #127c44;
+  background: rgba(18, 124, 68, 0.09);
+  font-size: 21rpx;
+}
+
+.user-id-divider {
+  height: 1rpx;
+  margin: 14rpx 0 20rpx;
+  background: rgba(18, 124, 68, 0.12);
+}
+
+/* 分享小程序卡片 */
+.share-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 34rpx 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.share-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1f2329;
+}
+
+.share-sub {
+  font-size: 24rpx;
+  color: #8f959e;
+  margin: 8rpx 0 24rpx;
+}
+
+.share-btn {
+  background: #127c44 !important;
+  color: #ffffff !important;
+  font-size: 30rpx !important;
+  font-weight: 600 !important;
+  height: 86rpx !important;
+  line-height: 86rpx !important;
+  border-radius: 16rpx !important;
+  border: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  box-shadow: 0 4rpx 14rpx rgba(18, 124, 68, 0.2);
+}
+
+.share-btn::after {
+  border: none;
+}
+
+/* 功能菜单卡片 */
+.menu-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 32rpx;
+  border-bottom: 1rpx solid #f2f3f5;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.menu-item:active {
+  background-color: #f9fafb;
+}
+
+.menu-btn {
+  width: 100% !important;
+  font-weight: normal !important;
+  text-align: left !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+}
+
+.menu-btn::after {
+  border: none;
+}
+
+.no-border {
+  border-bottom: none !important;
+}
+
+.menu-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  font-size: 34rpx;
+  margin-right: 20rpx;
+}
+
+.menu-label {
+  font-size: 28rpx;
+  color: #1f2329;
+}
+
+.menu-arrow {
+  font-size: 26rpx;
+  color: #c4c8d0;
+}
+
+/* 独立清空记录卡片 */
+.action-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-card:active {
+  background-color: #f9fafb;
+}
+
+/* 底部版本信息 */
+.footer-version {
+  text-align: center;
+  font-size: 22rpx;
+  color: #b0b5be;
+  margin-bottom: 50rpx;
+}
+
+/* 统一模态弹窗蒙层 (图2风格) */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 600rpx;
+  background: #ffffff;
+  border-radius: 28rpx;
+  overflow: hidden;
+  padding: 46rpx 36rpx 0;
+  box-sizing: border-box;
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.12);
+  animation: popIn 0.2s ease-out;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #1f2329;
+  text-align: center;
+  margin-bottom: 28rpx;
+}
+
+.modal-body {
+  font-size: 26rpx;
+  line-height: 1.68;
+  color: #555b66;
+}
+
+/* 图2专用隐私政策排版 */
+.privacy-body {
+  text-align: center;
+}
+
+.privacy-p {
+  margin-bottom: 12rpx;
+  color: #555b66;
+}
+
+.privacy-contact {
+  margin-top: 18rpx;
+}
+
+.contact-label {
+  color: #555b66;
+}
+
+.contact-email {
+  color: #127c44;
+  font-weight: 600;
+  text-decoration: underline;
+  margin-top: 4rpx;
+  display: inline-block;
+  padding: 4rpx 10rpx;
+}
+
+.modal-btn-confirm {
+  border-top: 1rpx solid #f0f1f3;
+  height: 92rpx;
+  line-height: 92rpx;
+  text-align: center;
+  color: #2b5aed;
+  font-size: 30rpx;
+  font-weight: 600;
+  margin: 32rpx -36rpx 0;
+}
+
+.modal-btn-confirm:active {
+  background-color: #f7f8fa;
+}
+
+.feedback-modal {
+  padding-bottom: 0;
+}
+
+.feedback-textarea {
+  width: 100%;
+  height: 220rpx;
+  padding: 22rpx;
+  box-sizing: border-box;
+  border-radius: 12rpx;
+  background: #f7f7f8;
+  color: #25282d;
+  font-size: 28rpx;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.feedback-placeholder {
+  color: #a8abb2;
+}
+
+.feedback-count {
+  margin-top: 8rpx;
+  color: #a0a4ab;
+  font-size: 22rpx;
+  text-align: right;
+}
+
+.feedback-contact {
+  height: 76rpx;
+  margin-top: 18rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  border: 1rpx solid #e6e8eb;
+  border-radius: 12rpx;
+  background: #fff;
+  font-size: 25rpx;
+}
+
+.feedback-actions {
+  margin: 28rpx -36rpx 0;
+}
+
+.modal-btn-action.disabled {
+  color: #a0a4ab;
+}
+
+/* 步骤教程排版 */
+.tutorial-section-title {
+  margin: 30rpx 0 22rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #edf0f2;
+  color: #14864b;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.step-item {
+  display: flex;
+  margin-bottom: 20rpx;
+  align-items: flex-start;
+}
+
+.step-num {
+  width: 38rpx;
+  height: 38rpx;
+  border-radius: 50%;
+  background: #127c44;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: bold;
+  margin-right: 18rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #333842;
+  line-height: 1.55;
+}
+
+/* 支持平台矩阵排版 */
+.platform-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+
+.platform-chip {
+  background: #f0f7f3;
+  color: #127c44;
+  padding: 8rpx 18rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.platform-tips {
+  text-align: center;
+  font-size: 24rpx;
+  color: #8f959e;
+  line-height: 1.5;
+}
+
+/* 卡密兑换弹窗排版 */
+.redeem-input-wrap {
+  background: #f5f6f8;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.redeem-input-box {
+  height: 64rpx;
+  font-size: 28rpx;
+  color: #1f2329;
+}
+
+.placeholder-style {
+  color: #a4abb5;
+  font-size: 26rpx;
+}
+
+.redeem-tip {
+  font-size: 22rpx;
+  color: #8f959e;
+  line-height: 1.5;
+}
+
+.modal-btn-row {
+  display: flex;
+  border-top: 1rpx solid #f0f1f3;
+  margin: 32rpx -36rpx 0;
+}
+
+.modal-btn-cancel {
+  flex: 1;
+  height: 92rpx;
+  line-height: 92rpx;
+  text-align: center;
+  color: #8f959e;
+  font-size: 30rpx;
+  border-right: 1rpx solid #f0f1f3;
+}
+
+.modal-btn-action {
+  flex: 1;
+  height: 92rpx;
+  line-height: 92rpx;
+  text-align: center;
+  color: #127c44;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.modal-btn-cancel:active, .modal-btn-action:active {
+  background-color: #f7f8fa;
+}

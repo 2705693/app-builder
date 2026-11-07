@@ -1,0 +1,132 @@
+.page {
+  padding: 28rpx;
+  padding-bottom: 70rpx;
+}
+.intro {
+  padding: 38rpx 34rpx;
+  border-radius: 24rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #087f5b, #14b87a);
+  margin-bottom: 24rpx;
+}
+.intro-title {
+  font-size: 42rpx;
+  font-weight: 700;
+}
+.intro-sub {
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  opacity: 0.9;
+}
+.panel {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(25, 70, 53, 0.06);
+}
+.label {
+  font-size: 25rpx;
+  color: #52605a;
+  margin: 22rpx 0 10rpx;
+}
+.label:first-child {
+  margin-top: 0;
+}
+.input {
+  height: 84rpx;
+  box-sizing: border-box;
+  padding: 0 24rpx;
+  border: 2rpx solid #e4e9e6;
+  background: #fafcfb;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+}
+.primary,
+.secondary,
+.copy {
+  border: 0;
+}
+.primary {
+  margin-top: 32rpx;
+  background: #07c160;
+  color: #fff;
+  border-radius: 16rpx;
+  font-size: 29rpx;
+}
+.secondary {
+  margin-top: 30rpx;
+  background: #eef4f1;
+  color: #39725d;
+  border-radius: 16rpx;
+  font-size: 27rpx;
+}
+.result {
+  margin-top: 24rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  background: #eef9f3;
+  color: #185d43;
+  font-size: 27rpx;
+  word-break: break-all;
+}
+.copy {
+  margin: 18rpx 0 0;
+  width: 160rpx;
+  line-height: 60rpx;
+  background: #dff3e8;
+  color: #087f5b;
+  font-size: 24rpx;
+  border-radius: 12rpx;
+}
+.saved {
+  margin-top: 26rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  background: #f5f8f6;
+}
+.saved-title {
+  font-weight: 700;
+  color: #285c49;
+  margin-bottom: 12rpx;
+}
+.saved-item {
+  color: #4f5d57;
+  line-height: 1.9;
+  font-size: 27rpx;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 8rpx;
+  border-bottom: 2rpx solid #f0f2f1;
+}
+.checkbox {
+  width: 44rpx;
+  height: 44rpx;
+  border: 3rpx solid #9ab0a6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 25rpx;
+  margin-right: 22rpx;
+}
+.check-text {
+  font-size: 28rpx;
+  color: #34423c;
+}
+.check-row.done .checkbox {
+  background: #07c160;
+  border-color: #07c160;
+}
+.check-row.done .check-text {
+  color: #99a39f;
+  text-decoration: line-through;
+}
+.privacy {
+  margin-top: 28rpx;
+  text-align: center;
+  font-size: 23rpx;
+  color: #a2aaa6;
+}

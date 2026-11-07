@@ -1,0 +1,245 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import '../services/api_service.dart';
+import '../services/storage_service.dart';
+import '../widgets/feedback_dialog.dart';
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final ApiService _apiService = ApiService();
+  int _quota = 50;
+  bool _isVip = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  void _loadUser() async {
+    final uid = await StorageService.getUserId();
+    final info = await _apiService.fetchUserInfo(uid);
+    if (mounted) {
+      setState(() {
+        _quota = info['total_quota'] ?? 50;
+        _isVip = info['is_vip'] ?? false;
+      });
+    }
+  }
+
+  void _showPlatforms() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('已支持解析平台', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF1E2822))),
+            const SizedBox(height: 14),
+            const Text(
+              '• 短视频巨头：抖音、快手、小红书（视频/高清原图集）、B站\n'
+              '• 腾讯生态：微信视频号 (channels.weixin.qq.com)\n'
+              '• 字节创作与AI：剪映 (ulikecam)、即梦 (jimeng)、豆包 AI\n'
+              '• 资讯与短剧：今日头条、红果短剧、番茄短剧\n'
+              '• 国际平台：TikTok、X (推特)、YouTube',
+              style: TextStyle(fontSize: 14, height: 1.8, color: Color(0xFF4A5C50)),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF127C44),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('我知道了', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTutorial() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('使用教程', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('1. 在抖音、小红书、B站等 App 中点击【分享】→【复制链接】；', style: TextStyle(fontSize: 14, height: 1.5)),
+            SizedBox(height: 8),
+            Text('2. 打开本 App，点击【一键粘贴】，然后点击【开始解析】；', style: TextStyle(fontSize: 14, height: 1.5)),
+            SizedBox(height: 8),
+            Text('3. 解析成功后，点击【保存到相册】即可极速下载无水印原画视频/图集。', style: TextStyle(fontSize: 14, height: 1.5)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('好的', style: TextStyle(color: Color(0xFF127C44), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyEmail() {
+    Clipboard.setData(const ClipboardData(text: 'sd0739@sd0739.top'));
+    Fluttertoast.showToast(msg: '已复制联系邮箱: sd0739@sd0739.top');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7FAF8),
+      appBar: AppBar(
+        title: const Text('我的', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E2822),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Column(
+          children: [
+            // 额度绿卡
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F3EC),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFD4E6DA)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('今日可用次数', style: TextStyle(fontSize: 13, color: Color(0xFF42634E), fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        _isVip ? '无限' : '$_quota',
+                        style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Color(0xFF127C44)),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _isVip ? '特权' : '次',
+                        style: const TextStyle(fontSize: 16, color: Color(0xFF127C44), fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _isVip ? '已开通不限次极速解析' : '每日免费 50 次 (00:00 自动刷新)',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF6A8E77)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // 功能菜单卡片
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x06000000), blurRadius: 10, offset: Offset(0, 3)),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _MenuItem(
+                    icon: Icons.menu_book_rounded,
+                    title: '使用教程',
+                    onTap: _showTutorial,
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
+                    icon: Icons.layers_rounded,
+                    title: '支持平台',
+                    onTap: _showPlatforms,
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
+                    icon: Icons.feedback_outlined,
+                    title: '意见反馈',
+                    onTap: () => showDialog(context: context, builder: (_) => const FeedbackDialog()),
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
+                    icon: Icons.mail_outline_rounded,
+                    title: '联系邮箱',
+                    trailingText: 'sd0739@sd0739.top',
+                    onTap: _copyEmail,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // 版本信息
+            const Text(
+              '钞机汇玩 v1.0.0 (Android 原生版)\n智能无水印多媒体提取与会员管理系统',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: Color(0xFFA5B8AC), height: 1.6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? trailingText;
+  final VoidCallback onTap;
+
+  const _MenuItem({
+    required this.icon,
+    required this.title,
+    this.trailingText,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFF127C44), size: 22),
+      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF202B23))),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingText != null)
+            Text(trailingText!, style: const TextStyle(fontSize: 12, color: Color(0xFF8A9990))),
+          const SizedBox(width: 4),
+          const Icon(Icons.chevron_right_rounded, size: 20, color: Color(0xFFC0CEC6)),
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+}

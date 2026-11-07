@@ -1,0 +1,26 @@
+page { background: #f6f7f8; }
+.page { padding: 24rpx 24rpx 60rpx; box-sizing: border-box; }
+.notice { padding: 20rpx 24rpx; border-radius: 16rpx; color: #3f6d59; background: #eaf7ef; font-size: 24rpx; line-height: 1.6; }
+.empty-card { margin-top: 28rpx; padding: 70rpx 36rpx; border-radius: 24rpx; background: #fff; text-align: center; }
+.empty-icon { width: 96rpx; height: 96rpx; margin: 0 auto; border-radius: 50%; line-height: 96rpx; color: #fff; background: #6c4bc2; font-size: 40rpx; font-weight: 700; }
+.empty-title { margin-top: 28rpx; color: #222; font-size: 34rpx; font-weight: 700; }
+.empty-sub { margin: 12rpx 0 36rpx; color: #8a8f96; font-size: 24rpx; }
+.toolbar { display: flex; gap: 10rpx; margin-top: 20rpx; }
+.toolbar button { flex: 1; margin: 0; padding: 0 8rpx; height: 66rpx; line-height: 66rpx; border-radius: 14rpx; font-size: 23rpx; }
+.mode-btn { color: #5f6570; background: #fff; }
+.mode-btn.active { color: #fff; background: #6c4bc2; }
+.tool-btn { color: #5f6570; background: #eceef1; }
+.brush-row { display: grid; grid-template-columns: 110rpx 1fr 50rpx; align-items: center; margin-top: 14rpx; padding: 8rpx 18rpx; border-radius: 14rpx; background: #fff; color: #60656d; font-size: 23rpx; }
+.canvas-wrap { display: flex; justify-content: center; align-items: center; margin-top: 20rpx; min-height: 300rpx; overflow: hidden; border-radius: 18rpx; background: #202124; }
+.repair-canvas { display: block; }
+.hint { padding: 16rpx 10rpx 4rpx; color: #8a6167; font-size: 22rpx; line-height: 1.5; }
+.actions { display: flex; gap: 16rpx; margin-top: 18rpx; }
+.actions button { flex: 1; margin: 0; }
+.primary, .secondary { height: 82rpx; line-height: 82rpx; border-radius: 16rpx; font-size: 27rpx; }
+.primary { color: #fff; background: #6c4bc2; }
+.secondary { color: #5e6570; background: #e9ebef; }
+.repair { flex: 2 !important; }
+.result-card { margin-top: 24rpx; padding: 24rpx; border-radius: 22rpx; background: #fff; }
+.result-title { margin-bottom: 18rpx; color: #25272b; font-size: 30rpx; font-weight: 700; }
+.result-image { width: 100%; border-radius: 14rpx; background: #eee; }
+.result-save { margin: 0 0 20rpx; }

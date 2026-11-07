@@ -1,0 +1,223 @@
+<view class="container">
+  <!-- 当前可用次数卡片 -->
+  <view class="quota-card">
+    <view class="user-id-row" bindtap="copyUserId">
+      <view class="user-id-label">我的专属ID</view>
+      <view class="user-id-value">{{userInfo.user_id || '正在获取...'}}</view>
+      <view class="user-id-copy" wx:if="{{userInfo.user_id}}">复制</view>
+    </view>
+    <view class="user-id-divider"></view>
+    <view class="quota-title">当前可用次数</view>
+    <view class="quota-num-row">
+      <text class="quota-num">{{ userInfo.is_vip ? '不限' : (userInfo.total_quota !== undefined ? userInfo.total_quota : 10) }}</text>
+      <text class="quota-unit" wx:if="{{ !userInfo.is_vip }}">次</text>
+    </view>
+    <view class="quota-sub">{{ userInfo.is_vip ? '不限次使用' : (userInfo.bonus_quota > 0 ? '每日免费 10 次，另有额外 ' + userInfo.bonus_quota + ' 次' : '每日免费 10 次') }}</view>
+    
+    <view class="quota-divider"></view>
+    
+    <view class="ad-reward-row" bindtap="onTapAdReward">
+      <view class="ad-reward-label">
+        <text>广告奖励</text>
+        <text class="info-circle">ⓘ</text>
+      </view>
+      <view class="badge-disabled">暂未开通</view>
+    </view>
+  </view>
+
+  <!-- 分享小程序卡片 (图1中部分享卡片) -->
+  <view class="share-card">
+    <view class="share-title">分享小程序</view>
+    <view class="share-sub">将一贴取影分享给有需要的朋友</view>
+    <button class="share-btn" open-type="share">分享给好友</button>
+  </view>
+
+  <!-- 菜单列表卡片 (图1功能列表) -->
+  <view class="menu-card">
+    <view class="menu-item" bindtap="openTutorialModal">
+      <view class="menu-left">
+        <text class="menu-icon">📖</text>
+        <text class="menu-label">使用教程</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="openPlatformsModal">
+      <view class="menu-left">
+        <text class="menu-icon">📚</text>
+        <text class="menu-label">支持平台</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <button class="menu-item menu-btn" bindtap="openFeedbackModal">
+      <view class="menu-left">
+        <text class="menu-icon">💬</text>
+        <text class="menu-label">意见反馈</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </button>
+
+    <view class="menu-item" bindtap="openPrivacyModal">
+      <view class="menu-left">
+        <text class="menu-icon">🛡️</text>
+        <text class="menu-label">隐私政策</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item no-border" bindtap="openRedeemModal">
+      <view class="menu-left">
+        <text class="menu-icon">🎟️</text>
+        <text class="menu-label">卡密兑换</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <!-- 意见反馈弹窗 -->
+  <view class="modal-mask" wx:if="{{ showFeedbackModal }}" bindtap="closeFeedbackModal">
+    <view class="modal-box feedback-modal" catchtap="preventBubble">
+      <view class="modal-title">意见反馈</view>
+      <textarea
+        class="feedback-textarea"
+        value="{{feedbackText}}"
+        maxlength="1000"
+        auto-height="false"
+        focus="{{showFeedbackModal}}"
+        placeholder="描述遇到的问题或建议（最多1000字）"
+        placeholder-class="feedback-placeholder"
+        bindinput="onFeedbackInput"
+      />
+      <view class="feedback-count">{{feedbackText.length}}/1000</view>
+      <input
+        class="feedback-contact"
+        value="{{feedbackContact}}"
+        maxlength="100"
+        placeholder="联系方式（选填：邮箱或微信号）"
+        bindinput="onFeedbackContactInput"
+      />
+      <view class="modal-btn-row feedback-actions">
+        <view class="modal-btn-cancel" bindtap="closeFeedbackModal">取消</view>
+        <view class="modal-btn-action {{feedbackSubmitting ? 'disabled' : ''}}" bindtap="submitFeedback">
+          {{feedbackSubmitting ? '正在提交...' : '提交反馈'}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 清空历史记录卡片 (图1底部卡片) -->
+  <view class="action-card" bindtap="onClearHistory">
+    <view class="menu-left">
+      <text class="menu-icon">🗑️</text>
+      <text class="menu-label">清空历史记录</text>
+    </view>
+    <text class="menu-arrow">></text>
+  </view>
+
+  <!-- 底部版本标识 (图1底端) -->
+  <view class="footer-version">
+    <text>一贴取影 v1.0</text>
+  </view>
+
+  <!-- 隐私与使用说明弹窗 (图2模态窗口，指定邮箱 sd0739@sd0739.top) -->
+  <view class="modal-mask" wx:if="{{ showPrivacyModal }}" bindtap="closePrivacyModal">
+    <view class="modal-box" catchtap="preventBubble">
+      <view class="modal-title">隐私与使用说明</view>
+      <view class="modal-body privacy-body">
+        <view class="privacy-p">仅在你点击粘贴时读取剪贴板，在点击保存时请求相册权限。</view>
+        <view class="privacy-p">真实服务使用微信登录标识记录额度，不要求手机号、头像或昵称。</view>
+        <view class="privacy-p">临时文件最多保存24小时，服务器提取与操作日志最多保留30天；「清空历史记录」仅清除手机本地记录。</view>
+        <view class="privacy-p">视频号链接会发送给腾讯元宝以进行解析；反馈会提交给开发者。</view>
+        <view class="privacy-p">请仅处理本人或已获授权的内容。</view>
+        <view class="privacy-contact">
+          <view class="contact-label">隐私联系邮箱：</view>
+          <view class="contact-email" bindtap="copyEmail">sd0739@sd0739.top</view>
+        </view>
+      </view>
+      <view class="modal-btn-confirm" bindtap="closePrivacyModal">知道了</view>
+    </view>
+  </view>
+
+  <!-- 使用教程弹窗 -->
+  <view class="modal-mask" wx:if="{{ showTutorialModal }}" bindtap="closeTutorialModal">
+    <view class="modal-box" catchtap="preventBubble">
+      <view class="modal-title">使用教程</view>
+      <view class="modal-body">
+        <view class="step-item">
+          <text class="step-num">1</text>
+          <text class="step-text">打开抖音、快手、小红书、B站、视频号等平台，点击作品右下角的「分享」→「复制链接」。</text>
+        </view>
+        <view class="step-item">
+          <text class="step-num">2</text>
+          <text class="step-text">返回本小程序，进入「提取」页面，系统将自动识别粘贴链接，或手动点击「粘贴」。</text>
+        </view>
+        <view class="step-item">
+          <text class="step-num">3</text>
+          <text class="step-text">点击「开始提取」，提取成功后即可在线预览，并点击「保存到相册」保存本人或已获授权的内容。</text>
+        </view>
+        <view class="tutorial-section-title">图片局部修复</view>
+        <view class="step-item">
+          <text class="step-num">1</text>
+          <text class="step-text">进入「提取」页面，点击「图片局部修复」，然后从相册选择本人或已获授权的图片。</text>
+        </view>
+        <view class="step-item">
+          <text class="step-num">2</text>
+          <text class="step-text">选择「矩形框选」或「画笔擦除」，准确标记需要处理的区域；画笔模式可调整大小。</text>
+        </view>
+        <view class="step-item">
+          <text class="step-num">3</text>
+          <text class="step-text">确认选区后点击「开始修复」，处理完成即可预览，并点击页面上方的「保存到相册」。</text>
+        </view>
+      </view>
+      <view class="modal-btn-confirm" bindtap="closeTutorialModal">知道了</view>
+    </view>
+  </view>
+
+  <!-- 支持平台弹窗 -->
+  <view class="modal-mask" wx:if="{{ showPlatformsModal }}" bindtap="closePlatformsModal">
+    <view class="modal-box" catchtap="preventBubble">
+      <view class="modal-title">支持平台矩阵</view>
+      <view class="modal-body">
+        <view class="platform-grid">
+          <view class="platform-chip">抖音</view>
+          <view class="platform-chip">小红书</view>
+          <view class="platform-chip">快手</view>
+          <view class="platform-chip">B站</view>
+          <view class="platform-chip">微信视频号</view>
+          <view class="platform-chip">剪映/即梦</view>
+          <view class="platform-chip">今日头条</view>
+          <view class="platform-chip">豆包 AI</view>
+          <view class="platform-chip">红果短剧</view>
+          <view class="platform-chip">番茄短剧</view>
+          <view class="platform-chip">TikTok</view>
+          <view class="platform-chip">X (推特)</view>
+          <view class="platform-chip">YouTube</view>
+        </view>
+        <view class="platform-tips">支持多个常用平台的视频与图集链接识别，仅用于处理本人或已获授权的内容。</view>
+      </view>
+      <view class="modal-btn-confirm" bindtap="closePlatformsModal">知道了</view>
+    </view>
+  </view>
+
+  <!-- 卡密兑换弹窗 -->
+  <view class="modal-mask" wx:if="{{ showRedeemModal }}" bindtap="closeRedeemModal">
+    <view class="modal-box" catchtap="preventBubble">
+      <view class="modal-title">卡密兑换</view>
+      <view class="modal-body">
+        <view class="redeem-input-wrap">
+          <input class="redeem-input-box" 
+                 placeholder="请输入授权卡密兑换码" 
+                 placeholder-class="placeholder-style"
+                 value="{{ cardKey }}" 
+                 bindinput="onInputCardKey" />
+        </view>
+        <view class="redeem-tip">输入管理员发放的卡密可即时增加次数或开通不限次使用。</view>
+      </view>
+      <view class="modal-btn-row">
+        <view class="modal-btn-cancel" bindtap="closeRedeemModal">取消</view>
+        <view class="modal-btn-action" bindtap="handleRedeem">立即兑换</view>
+      </view>
+    </view>
+  </view>
+</view>

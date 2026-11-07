@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/video-helper/video-helper",
+    "pages/image-repair/image-repair",
+    "pages/history/history",
+    "pages/my/my",
+    "pages/index/index",
+    "pages/tools/tools",
+    "pages/list/list",
+    "pages/detail/detail"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "一链取影",
+    "backgroundColor": "#f8f9fa"
+  },
+  "tabBar": {
+    "color": "#8a8a8a",
+    "selectedColor": "#127c44",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/video-helper/video-helper",
+        "text": "提取",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "记录",
+        "iconPath": "assets/tabbar/history.png",
+        "selectedIconPath": "assets/tabbar/history-active.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的",
+        "iconPath": "assets/tabbar/user.png",
+        "selectedIconPath": "assets/tabbar/user-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

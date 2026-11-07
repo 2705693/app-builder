@@ -1,0 +1,224 @@
+<view class="container">
+  <!-- 顶部标题区 -->
+  <view class="header-section">
+    <view class="main-title">一键提取，轻松保存</view>
+    <view class="sub-title">粘贴分享链接，保存视频或图集</view>
+  </view>
+
+  <!-- 声明与合规提示 -->
+  <view class="compliance-badge">
+    <text class="info-icon">ⓘ</text>
+    <text class="compliance-text">仅处理本人或已获授权的视频</text>
+  </view>
+
+  <!-- 支持的平台徽标条 -->
+  <view class="platforms-bar">
+    <view class="platform-item">
+      <view class="badge badge-douyin">抖音</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-xhs">小红书</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-ks">快手</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-bili">B站</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-tiktok">TikTok</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-x">X(推特)</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-yt">YouTube</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-jy">剪映/即梦</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-tt">今日头条</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-db">豆包</view>
+      <view class="status-dot"></view>
+    </view>
+    <view class="platform-item">
+      <view class="badge badge-novel">红果/番茄</view>
+      <view class="status-dot"></view>
+    </view>
+  </view>
+
+  <!-- 核心输入卡片 -->
+  <view class="input-card">
+    <view class="input-inner">
+      <view class="link-symbol" wx:if="{{!rawText}}">
+        <text class="symbol-icon">🔗</text>
+      </view>
+      <textarea 
+        class="link-textarea" 
+        value="{{rawText}}" 
+        placeholder="在这里粘贴分享链接&#10;支持粘贴整段分享文案" 
+        placeholder-class="textarea-placeholder"
+        maxlength="2000" 
+        bindinput="onInput" 
+      />
+    </view>
+    <view class="card-action-bar">
+      <button class="paste-btn" bindtap="pasteLink">
+        <text class="btn-icon">📋</text>
+        <text>粘贴链接</text>
+      </button>
+      <view class="clear-text" bindtap="clearLink" wx:if="{{rawText}}">清空</view>
+    </view>
+  </view>
+
+  <!-- 开始提取主按钮 -->
+  <button 
+    class="parse-submit-btn" 
+    loading="{{parsing}}" 
+    disabled="{{parsing}}" 
+    bindtap="startParse"
+  >
+    {{ parsing ? '正在提取中...' : '开始提取' }}
+  </button>
+
+  <button class="image-repair-entry" bindtap="openImageRepair">图片局部修复</button>
+
+  <!-- 额度信息条 -->
+  <view class="quota-bar" bindtap="showQuotaTips">
+    <view class="quota-left">
+      <text class="quota-clock">{{ isVip ? '∞' : '🕒' }}</text>
+      <text class="quota-text">{{ isVip ? '不限次使用' : '当前剩余 ' + remainingQuota + ' 次' }}</text>
+    </view>
+    <view class="quota-right">
+      <text>{{ isVip ? '不限次使用' : (bonusQuota > 0 ? '额外 ' + bonusQuota + ' 次' : '每日免费 10 次') }}</text>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 解析结果呈现卡片 -->
+  <view class="result-card" wx:if="{{result}}">
+    <view class="result-header">
+      <view class="result-tag">{{result.platform || '视频'}}</view>
+      <view class="result-title">{{result.title || '提取成功'}}</view>
+    </view>
+
+    <!-- 视频预览模式 -->
+    <block wx:if="{{result.type === 'video'}}">
+      <video 
+        class="video-player" 
+        src="{{result.videoUrl}}" 
+        poster="{{result.coverUrl}}"
+        controls 
+        show-center-play-btn
+      ></video>
+      <view class="result-actions">
+        <button class="save-btn {{ downloading ? 'btn-downloading' : '' }}" bindtap="saveToAlbum">
+          <block wx:if="{{downloading}}">
+            正在下载 {{downloadProgress}}% · 点击停止
+          </block>
+          <block wx:elif="{{saving}}">
+            正在存入相册...
+          </block>
+          <block wx:else>
+            保存到手机相册
+          </block>
+        </button>
+        <button class="copy-link-btn" bindtap="copyDirectLink">复制下载链接</button>
+      </view>
+    </block>
+
+    <!-- 图集预览模式 -->
+    <block wx:if="{{result.type === 'images' || result.type === 'image'}}">
+      <view class="gallery-tip">检测到图集共 {{result.images.length}} 张，点击可全屏预览：</view>
+      <scroll-view class="image-gallery" scroll-x>
+        <view class="gallery-item" wx:for="{{result.images}}" wx:key="*this">
+          <image
+            class="gallery-thumb"
+            src="{{item}}"
+            mode="aspectFill"
+            data-url="{{item}}"
+            bindtap="previewSingleImage"
+          />
+          <button class="gallery-repair-btn" data-url="{{item}}" bindtap="repairGalleryImage">局部修复</button>
+        </view>
+      </scroll-view>
+      <view class="result-actions">
+        <button class="save-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="saveAllImages">
+          批量保存图集到相册
+        </button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 底部使用方法引导 -->
+  <view class="tutorial-section">
+    <view class="tutorial-title">使用方法</view>
+    <view class="steps-row">
+      <!-- 步骤 1 -->
+      <view class="step-card">
+        <view class="step-badge">1</view>
+        <view class="step-name">复制链接</view>
+        <view class="step-desc">在平台分享中</view>
+      </view>
+      
+      <view class="step-arrow">›</view>
+
+      <!-- 步骤 2 -->
+      <view class="step-card">
+        <view class="step-badge">2</view>
+        <view class="step-name">粘贴解析</view>
+        <view class="step-desc">粘贴到上方</view>
+      </view>
+
+      <view class="step-arrow">›</view>
+
+      <!-- 步骤 3 -->
+      <view class="step-card">
+        <view class="step-badge">3</view>
+        <view class="step-name">保存相册</view>
+        <view class="step-desc">解析成功后</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 视频下载进度与控制模态弹窗 -->
+  <view class="download-modal-mask" wx:if="{{downloading}}">
+    <view class="download-modal-card">
+      <view class="download-modal-header">
+        <view class="download-modal-title">正在下载视频</view>
+        <view class="download-modal-badge">{{downloadProgress}}%</view>
+      </view>
+
+      <!-- 进度条 -->
+      <view class="download-bar-track">
+        <view class="download-bar-fill" style="width: {{downloadProgress}}%;"></view>
+      </view>
+
+      <view class="download-meta-row">
+        <text class="download-phase">{{downloadPhaseText}}</text>
+        <text class="download-size" wx:if="{{downloadSizeText}}">{{downloadSizeText}}</text>
+      </view>
+
+      <view class="download-tip-box">
+        <text class="download-tip-icon">💡</text>
+        <text class="download-tip-text">长视频文件较大时下载耗时较长。如需后台下载，可点击下方停止后，使用「复制下载链接」在手机浏览器中下载。</text>
+      </view>
+
+      <view class="download-modal-btns">
+        <button class="btn-abort-download" bindtap="cancelDownload">停止下载</button>
+      </view>
+    </view>
+  </view>
+</view>

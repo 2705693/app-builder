@@ -1,0 +1,552 @@
+page {
+  background-color: #f7f9f8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.container {
+  padding: 40rpx 32rpx 80rpx;
+  box-sizing: border-box;
+}
+
+/* 顶部标题 */
+.header-section {
+  margin-top: 10rpx;
+  margin-bottom: 26rpx;
+}
+
+.main-title {
+  font-size: 46rpx;
+  font-weight: 800;
+  color: #1a201c;
+  letter-spacing: 0.5rpx;
+}
+
+.sub-title {
+  font-size: 27rpx;
+  color: #6a7970;
+  margin-top: 12rpx;
+}
+
+/* 合规免责条 */
+.compliance-badge {
+  display: flex;
+  align-items: center;
+  background-color: #edf7f0;
+  border: 1rpx solid #d4ebdc;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin-bottom: 30rpx;
+}
+
+.info-icon {
+  font-size: 26rpx;
+  color: #1f7a47;
+  margin-right: 12rpx;
+}
+
+.compliance-text {
+  font-size: 25rpx;
+  color: #1f7a47;
+  font-weight: 500;
+}
+
+/* 平台展示徽标 */
+.platforms-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14rpx 16rpx;
+  margin-bottom: 28rpx;
+  padding: 0 4rpx;
+}
+
+.platform-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.badge {
+  font-size: 22rpx;
+  font-weight: 600;
+  padding: 6rpx 14rpx;
+  border-radius: 8rpx;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.badge-douyin { background-color: #000000; }
+.badge-xhs { background-color: #ff2442; }
+.badge-ks { background-color: #ff5000; }
+.badge-bili { background-color: #00aeec; }
+.badge-tiktok { background-color: #010101; }
+.badge-x { background-color: #0f1419; }
+.badge-yt { background-color: #ff0000; }
+.badge-jy { background-color: #111111; }
+.badge-tt { background-color: #f85959; }
+.badge-db { background-color: #2b66ff; }
+.badge-novel { background-color: #ff6022; }
+
+.status-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background-color: #07c160;
+}
+
+/* 核心输入卡片 */
+.input-card {
+  background-color: #ffffff;
+  border-radius: 28rpx;
+  padding: 28rpx 30rpx 20rpx;
+  border: 2rpx dashed #cfe0d6;
+  box-shadow: 0 6rpx 24rpx rgba(18, 56, 34, 0.04);
+  margin-bottom: 28rpx;
+}
+
+.input-inner {
+  position: relative;
+  min-height: 200rpx;
+}
+
+.link-textarea {
+  width: 100%;
+  min-height: 200rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #222b25;
+  box-sizing: border-box;
+}
+
+.textarea-placeholder {
+  color: #92a297;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.card-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+}
+
+.paste-btn {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background-color: #ebf7ef;
+  color: #0f7841;
+  font-size: 26rpx;
+  font-weight: 600;
+  border-radius: 40rpx;
+  padding: 10rpx 28rpx;
+  line-height: 1.5;
+}
+
+.btn-icon {
+  font-size: 24rpx;
+}
+
+.clear-text {
+  font-size: 26rpx;
+  color: #8c9b91;
+  padding: 10rpx 16rpx;
+}
+
+/* 开始解析大按钮 */
+.parse-submit-btn {
+  background-color: #127c44;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 700;
+  height: 96rpx;
+  line-height: 96rpx;
+  border-radius: 22rpx;
+  box-shadow: 0 10rpx 24rpx rgba(18, 124, 68, 0.28);
+  margin-bottom: 24rpx;
+}
+
+.parse-submit-btn[disabled] {
+  background-color: #80baa0 !important;
+  color: #e5f5ed !important;
+  box-shadow: none;
+}
+
+/* 额度条 */
+.quota-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 8rpx;
+  margin-bottom: 40rpx;
+}
+
+.quota-left {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.quota-clock {
+  font-size: 26rpx;
+}
+
+.quota-text {
+  font-size: 26rpx;
+  color: #2b3a30;
+  font-weight: 600;
+}
+
+.quota-right {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  font-size: 24rpx;
+  color: #6a7970;
+}
+
+.arrow {
+  font-size: 28rpx;
+  color: #92a297;
+}
+
+/* 结果卡片 */
+.result-card {
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  margin-bottom: 36rpx;
+  box-shadow: 0 6rpx 24rpx rgba(18, 56, 34, 0.06);
+}
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.result-tag {
+  background-color: #ebf7ef;
+  color: #0f7841;
+  font-size: 22rpx;
+  font-weight: 600;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.result-title {
+  font-size: 28rpx;
+  color: #202b23;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.video-player {
+  width: 100%;
+  height: 420rpx;
+  border-radius: 16rpx;
+  background-color: #000;
+}
+
+.gallery-tip {
+  font-size: 24rpx;
+  color: #6a7970;
+  margin-bottom: 16rpx;
+}
+
+.image-gallery {
+  white-space: nowrap;
+  width: 100%;
+  padding-bottom: 16rpx;
+}
+
+.gallery-thumb {
+  display: inline-block;
+  width: 180rpx;
+  height: 240rpx;
+  border-radius: 12rpx;
+  margin-right: 14rpx;
+  background-color: #eee;
+}
+
+.image-repair-entry {
+  margin: 18rpx 0 8rpx;
+  height: 78rpx;
+  line-height: 78rpx;
+  border-radius: 18rpx;
+  background: #f2edff;
+  color: #6246a8;
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.gallery-item {
+  display: inline-flex;
+  width: 180rpx;
+  margin-right: 14rpx;
+  flex-direction: column;
+  vertical-align: top;
+}
+
+.gallery-item .gallery-thumb {
+  margin-right: 0;
+}
+
+.gallery-repair-btn {
+  width: 180rpx;
+  margin: 8rpx 0 0;
+  padding: 0;
+  height: 54rpx;
+  line-height: 54rpx;
+  border-radius: 12rpx;
+  background: #f2edff;
+  color: #6246a8;
+  font-size: 22rpx;
+}
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.save-btn {
+  background-color: #07c160;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 700;
+  border-radius: 18rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  width: 100%;
+}
+
+.copy-link-btn {
+  background-color: #f1f5f3;
+  color: #4b6255;
+  font-size: 26rpx;
+  border-radius: 18rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  width: 100%;
+}
+
+/* 使用方法步骤 */
+.tutorial-section {
+  margin-top: 10rpx;
+}
+
+.tutorial-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1a201c;
+  margin-bottom: 24rpx;
+}
+
+.steps-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.step-card {
+  flex: 1;
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  padding: 26rpx 16rpx 22rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 18rpx rgba(18, 56, 34, 0.04);
+}
+
+.step-badge {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  background-color: #147a46;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14rpx;
+}
+
+.step-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #212c24;
+  margin-bottom: 6rpx;
+}
+
+.step-desc {
+  font-size: 21rpx;
+  color: #8a9990;
+}
+
+.step-arrow {
+  padding: 0 8rpx;
+  font-size: 32rpx;
+  color: #b5c4bc;
+  font-weight: 300;
+}
+
+/* 正在下载态按钮 */
+.save-btn.btn-downloading {
+  background: linear-gradient(135deg, #e67e22, #d35400) !important;
+  color: #ffffff !important;
+  animation: pulse-download 1.8s infinite alternate ease-in-out;
+}
+
+@keyframes pulse-download {
+  0% { opacity: 0.92; }
+  100% { opacity: 1; transform: scale(1.008); }
+}
+
+/* 下载模态弹窗遮罩 */
+.download-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.62);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 弹窗内容卡片 */
+.download-modal-card {
+  width: 100%;
+  max-width: 620rpx;
+  background-color: #ffffff;
+  border-radius: 28rpx;
+  padding: 38rpx 36rpx;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+
+.download-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.download-modal-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1a231d;
+}
+
+.download-modal-badge {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #0f7841;
+  background-color: #ebf7ef;
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+/* 进度条底槽与填充 */
+.download-bar-track {
+  width: 100%;
+  height: 16rpx;
+  background-color: #eaf1ed;
+  border-radius: 10rpx;
+  overflow: hidden;
+  margin-bottom: 16rpx;
+}
+
+.download-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #07c160);
+  border-radius: 10rpx;
+  transition: width 0.2s ease;
+}
+
+/* 进度详情 */
+.download-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 24rpx;
+  color: #6a7970;
+  margin-bottom: 24rpx;
+}
+
+.download-phase {
+  font-weight: 500;
+  color: #3d4a42;
+}
+
+.download-size {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #8c9b91;
+}
+
+/* 底部温馨小贴士 */
+.download-tip-box {
+  background-color: #f6f8f7;
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  display: flex;
+  align-items: flex-start;
+  gap: 10rpx;
+  margin-bottom: 30rpx;
+}
+
+.download-tip-icon {
+  font-size: 26rpx;
+  line-height: 1.4;
+}
+
+.download-tip-text {
+  font-size: 22rpx;
+  color: #6c7c72;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* 停止下载按钮 */
+.download-modal-btns {
+  display: flex;
+  gap: 16rpx;
+}
+
+.btn-abort-download {
+  width: 100%;
+  height: 84rpx;
+  line-height: 84rpx;
+  border-radius: 20rpx;
+  background-color: #fff1f0;
+  color: #cf1322;
+  border: 2rpx solid #ffa39e;
+  font-size: 28rpx;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.btn-abort-download:active {
+  background-color: #ffccc7;
+  transform: scale(0.98);
+}

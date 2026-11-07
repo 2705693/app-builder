@@ -1,0 +1,53 @@
+<view class="page">
+  <view class="notice">仅处理本人或已获授权的图片。框选或涂抹后，服务器会修复选中区域。</view>
+
+  <view class="empty-card" wx:if="{{!sourcePath}}">
+    <view class="empty-icon">修</view>
+    <view class="empty-title">选择需要修复的图片</view>
+    <view class="empty-sub">支持 JPG、PNG、WebP，文件不超过 15MB</view>
+    <button class="primary" bindtap="chooseImage">从相册选择</button>
+  </view>
+
+  <block wx:else>
+    <view class="toolbar">
+      <button class="mode-btn {{mode === 'rect' ? 'active' : ''}}" data-mode="rect" bindtap="setMode">矩形框选</button>
+      <button class="mode-btn {{mode === 'brush' ? 'active' : ''}}" data-mode="brush" bindtap="setMode">画笔擦除</button>
+      <button class="tool-btn" bindtap="undo">撤销</button>
+      <button class="tool-btn" bindtap="clearMask">清空</button>
+    </view>
+
+    <view class="brush-row" wx:if="{{mode === 'brush'}}">
+      <text>画笔大小</text>
+      <slider min="8" max="60" value="{{brushSize}}" bindchange="changeBrushSize" activeColor="#6c4bc2" />
+      <text>{{brushSize}}</text>
+    </view>
+
+    <view class="canvas-wrap">
+      <canvas
+        class="repair-canvas"
+        canvas-id="repairCanvas"
+        style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"
+        width="{{canvasWidth}}"
+        height="{{canvasHeight}}"
+        bindtouchstart="touchStart"
+        catchtouchmove="touchMove"
+        bindtouchend="touchEnd"
+      ></canvas>
+    </view>
+
+    <view class="hint">红色区域会被修复。请准确覆盖需要处理的位置，避免框到人物或主体。</view>
+
+    <view class="actions">
+      <button class="secondary" bindtap="chooseImage">换一张</button>
+      <button class="primary repair" loading="{{repairing}}" disabled="{{repairing || !actions.length}}" bindtap="submitRepair">
+        {{repairing ? '正在修复...' : '开始修复'}}
+      </button>
+    </view>
+
+    <view class="result-card" wx:if="{{resultUrl}}">
+      <view class="result-title">修复结果</view>
+      <button class="primary result-save" bindtap="saveResult">保存到相册</button>
+      <image class="result-image" src="{{resultUrl}}" mode="widthFix" bindtap="previewResult" />
+    </view>
+  </block>
+</view>

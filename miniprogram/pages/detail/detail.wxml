@@ -1,0 +1,38 @@
+<view class="page" wx:if="{{item}}">
+  <image class="cover" src="{{item.cover}}" mode="aspectFill" />
+  <view class="video-badge" wx:if="{{item.video}}">▶ 含视频教程</view>
+
+  <view class="content-card">
+    <view class="title-row">
+      <view class="tag">{{item.categoryName}} · {{item.tag}}</view>
+    </view>
+    <view class="title">{{item.title}}</view>
+    <view class="subtitle">{{item.subtitle}}</view>
+
+    <block wx:if="{{item.video}}">
+      <view class="video-section">
+        <view class="video-label">视频教程<text class="video-duration" wx:if="{{item.video.duration}}">{{item.video.duration}}</text></view>
+        <video
+          class="video-player"
+          src="{{item.video.src}}"
+          poster="{{item.video.poster}}"
+          controls
+          show-fullscreen-btn
+          show-play-btn
+          enable-play-gesture
+          object-fit="contain"
+        ></video>
+      </view>
+    </block>
+
+    <view class="divider"></view>
+
+    <text class="body">{{item.content}}</text>
+  </view>
+
+  <view class="tip">点击右上角「···」可以分享给朋友</view>
+</view>
+
+<view class="empty" wx:else>
+  <text>内容不存在</text>
+</view>
