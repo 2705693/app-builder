@@ -31,30 +31,4 @@ for bg in glob.glob("android/app/build.gradle*"):
     p.write_text(s, encoding="utf-8")
     print("Updated minSdk to 21 in:", bg)
 
-# 3. 确保根 build.gradle 存在并注入 subprojects compileSdkVersion 补丁
-root_bg = Path("android/build.gradle")
-patch = """
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
-                compileSdkVersion 34
-                buildToolsVersion '34.0.0'
-            }
-        }
-    }
-}
-"""
-if root_bg.exists():
-    text = root_bg.read_text(encoding="utf-8")
-    root_bg.write_text(text + "\n" + patch, encoding="utf-8")
-else:
-    root_bg.write_text(patch, encoding="utf-8")
-print("Injected subprojects compileSdkVersion patch to android/build.gradle!")
+print("Android configuration fixed successfully!")
