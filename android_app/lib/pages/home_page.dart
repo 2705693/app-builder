@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
     return false;
   }
 
-  void _loadUserInfo() async {
+  Future<void> _loadUserInfo() async {
     final uid = await StorageService.getUserId();
     final info = await _apiService.fetchUserInfo(uid);
     if (mounted) {
@@ -143,7 +143,13 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _result = res;
           _parsing = false;
+          if (!_isVip && _remainingQuota > 0) {
+            _remainingQuota--;
+          }
         });
+
+        // 立即向服务器拉取最新剩余额度并刷新 UI
+        _loadUserInfo();
 
         // 保存到历史记录
         StorageService.addHistory(HistoryItem(
@@ -162,7 +168,8 @@ class _HomePageState extends State<HomePage> {
           _initVideoPlayer(res.videoUrl);
         }
 
-        Fluttertoast.showToast(msg: '解析成功！');
+        await _loadUserInfo();
+        Fluttertoast.showToast(msg: '提取成功，已扣除 1 次额度');
       }
     } catch (e) {
       if (mounted) {
@@ -291,6 +298,7 @@ class _HomePageState extends State<HomePage> {
       }
       if (ok) {
         Fluttertoast.showToast(msg: '视频已成功保存到手机相册！');
+        _loadUserInfo();
       }
     } catch (err) {
       if (progressDialogOpen && progressDialogContext != null && progressDialogContext!.mounted) {
@@ -311,6 +319,7 @@ class _HomePageState extends State<HomePage> {
       onProgress: (curr, total) {},
     );
     Fluttertoast.showToast(msg: '成功保存 $count 张图片到手机相册');
+    _loadUserInfo();
   }
 
   // 5. 复制下载链接

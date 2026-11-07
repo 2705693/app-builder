@@ -54,7 +54,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final pages = [
       HomePage(onTabChange: (idx) => setState(() => _currentIndex = idx)),
       const HistoryPage(),
-      const ProfilePage(),
+      ProfilePage(isActive: _currentIndex == 2),
     ];
 
     return Scaffold(

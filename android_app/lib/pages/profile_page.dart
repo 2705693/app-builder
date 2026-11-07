@@ -7,7 +7,9 @@ import '../services/storage_service.dart';
 import '../widgets/feedback_dialog.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final bool isActive;
+
+  const ProfilePage({super.key, this.isActive = false});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -23,6 +25,14 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _loadUser();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfilePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      _loadUser();
+    }
   }
 
   Future<void> _loadUser() async {
