@@ -5,7 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 import '../models/history_item.dart';
+import '../services/download_service.dart';
 import '../services/storage_service.dart';
+import '../widgets/download_dialog.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -15,6 +17,7 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  final DownloadService _downloadService = DownloadService();
   List<HistoryItem> _list = [];
   bool _loading = true;
 
@@ -60,6 +63,84 @@ class _HistoryPageState extends State<HistoryPage> {
         ],
       ),
     );
+  }
+
+  void _copyDownloadLink(HistoryItem item) {
+    final url = item.videoUrl.isNotEmpty ? item.videoUrl : (item.images.isNotEmpty ? item.images.first : '');
+    if (url.isEmpty) {
+      Fluttertoast.showToast(msg: '该记录没有可复制的下载链接');
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: url));
+    Fluttertoast.showToast(msg: '下载链接已复制');
+  }
+
+  Future<void> _saveHistoryItem(HistoryItem item) async {
+    if (item.type != 'video' && item.images.isNotEmpty) {
+      Fluttertoast.showToast(msg: '开始保存图集到相册…');
+      final count = await _downloadService.downloadAndSaveImages(
+        imageUrls: item.images,
+        onProgress: (_, __) {},
+      );
+      Fluttertoast.showToast(msg: '已保存 $count 张图片到相册');
+      return;
+    }
+    if (item.videoUrl.isEmpty) {
+      Fluttertoast.showToast(msg: '该记录没有可保存的视频');
+      return;
+    }
+
+    double progress = 0;
+    String sizeText = '';
+    StateSetter? updateDialog;
+    BuildContext? progressContext;
+    bool dialogOpen = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (_, setDialogState) {
+          progressContext = ctx;
+          updateDialog = setDialogState;
+          return DownloadDialog(
+            progress: progress,
+            sizeText: sizeText,
+            onCancel: () {
+              _downloadService.cancelDownload();
+              if (dialogOpen) {
+                dialogOpen = false;
+                Navigator.of(ctx).pop();
+              }
+              Fluttertoast.showToast(msg: '已停止下载');
+            },
+          );
+        },
+      ),
+    ).whenComplete(() => dialogOpen = false);
+
+    try {
+      final ok = await _downloadService.downloadAndSaveVideo(
+        videoUrl: item.videoUrl,
+        onProgress: (received, total, value) {
+          progress = value;
+          if (total > 0) {
+            sizeText = '${(received / 1024 / 1024).toStringAsFixed(1)} MB / ${(total / 1024 / 1024).toStringAsFixed(1)} MB';
+          }
+          if (dialogOpen) updateDialog?.call(() {});
+        },
+      );
+      if (dialogOpen && progressContext != null && progressContext!.mounted) {
+        dialogOpen = false;
+        Navigator.of(progressContext!).pop();
+      }
+      if (ok) Fluttertoast.showToast(msg: '视频已保存到手机相册');
+    } catch (e) {
+      if (dialogOpen && progressContext != null && progressContext!.mounted) {
+        dialogOpen = false;
+        Navigator.of(progressContext!).pop();
+      }
+      Fluttertoast.showToast(msg: '保存失败: $e');
+    }
   }
 
   @override
@@ -166,14 +247,24 @@ class _HistoryPageState extends State<HistoryPage> {
                               ],
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFF127C44)),
-                            tooltip: '复制链接',
-                            onPressed: () {
-                              final url = item.videoUrl.isNotEmpty ? item.videoUrl : (item.images.isNotEmpty ? item.images.first : '');
-                              Clipboard.setData(ClipboardData(text: url));
-                              Fluttertoast.showToast(msg: '链接已复制');
-                            },
+                          SizedBox(
+                            width: 92,
+                            child: Column(
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () => _copyDownloadLink(item),
+                                  icon: const Icon(Icons.copy_rounded, size: 15),
+                                  label: const Text('复制链接', style: TextStyle(fontSize: 11)),
+                                  style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4)),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => _saveHistoryItem(item),
+                                  icon: const Icon(Icons.download_rounded, size: 16),
+                                  label: const Text('保存相册', style: TextStyle(fontSize: 11)),
+                                  style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4)),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

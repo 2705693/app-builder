@@ -390,7 +390,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             // 版本信息
             const Text(
-              '钞机汇玩 v1.0.0 (Android 原生版)\n智能无水印多媒体提取与会员管理系统',
+              '一贴取影 v1.0.0 (Android版)\n多媒体内容提取与图片修复工具',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: Color(0xFFA5B8AC), height: 1.6),
             ),

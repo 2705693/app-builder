@@ -171,56 +171,65 @@ class _HomePageState extends State<HomePage> {
   }
 
   // 3. 原生保存视频到系统相册
-  void _saveVideoToAlbum() {
+  Future<void> _saveVideoToAlbum() async {
     if (_result == null || _result!.videoUrl.isEmpty) return;
 
     double currentProgress = 0.0;
     String currentSizeText = '';
     StateSetter? dialogSetState;
+    BuildContext? progressDialogContext;
+    bool progressDialogOpen = true;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
+          progressDialogContext = ctx;
           dialogSetState = setDialogState;
           return DownloadDialog(
             progress: currentProgress,
             sizeText: currentSizeText,
             onCancel: () {
               _downloadService.cancelDownload();
-              Navigator.pop(ctx);
+              if (progressDialogOpen) {
+                progressDialogOpen = false;
+                Navigator.of(ctx).pop();
+              }
               Fluttertoast.showToast(msg: '已停止下载');
             },
           );
         },
       ),
-    );
+    ).whenComplete(() => progressDialogOpen = false);
 
-    _downloadService.downloadAndSaveVideo(
-      videoUrl: _result!.videoUrl,
-      onProgress: (received, total, progress) {
-        currentProgress = progress;
-        if (total > 0) {
-          final recM = (received / 1024 / 1024).toStringAsFixed(1);
-          final totM = (total / 1024 / 1024).toStringAsFixed(1);
-          currentSizeText = '$recM MB / $totM MB';
-        }
-        dialogSetState?.call(() {});
-      },
-    ).then((ok) {
-      if (mounted && Navigator.canPop(context)) {
-        Navigator.pop(context);
+    try {
+      final ok = await _downloadService.downloadAndSaveVideo(
+        videoUrl: _result!.videoUrl,
+        onProgress: (received, total, progress) {
+          currentProgress = progress;
+          if (total > 0) {
+            final recM = (received / 1024 / 1024).toStringAsFixed(1);
+            final totM = (total / 1024 / 1024).toStringAsFixed(1);
+            currentSizeText = '$recM MB / $totM MB';
+          }
+          if (progressDialogOpen) dialogSetState?.call(() {});
+        },
+      );
+      if (progressDialogOpen && progressDialogContext != null && progressDialogContext!.mounted) {
+        progressDialogOpen = false;
+        Navigator.of(progressDialogContext!).pop();
       }
       if (ok) {
         Fluttertoast.showToast(msg: '视频已成功保存到手机相册！');
       }
-    }).catchError((err) {
-      if (mounted && Navigator.canPop(context)) {
-        Navigator.pop(context);
+    } catch (err) {
+      if (progressDialogOpen && progressDialogContext != null && progressDialogContext!.mounted) {
+        progressDialogOpen = false;
+        Navigator.of(progressDialogContext!).pop();
       }
       Fluttertoast.showToast(msg: '保存失败: $err');
-    });
+    }
   }
 
   // 4. 批量保存图集
