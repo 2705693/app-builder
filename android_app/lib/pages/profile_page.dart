@@ -15,8 +15,9 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ApiService _apiService = ApiService();
-  int _quota = 50;
+  int _quota = 10;
   bool _isVip = false;
+  String _userId = '';
 
   @override
   void initState() {
@@ -29,7 +30,8 @@ class _ProfilePageState extends State<ProfilePage> {
     final info = await _apiService.fetchUserInfo(uid);
     if (mounted) {
       setState(() {
-        _quota = info['total_quota'] ?? 50;
+        _userId = uid;
+        _quota = info['total_quota'] ?? 10;
         _isVip = info['is_vip'] ?? false;
       });
     }
@@ -106,6 +108,12 @@ class _ProfilePageState extends State<ProfilePage> {
     Fluttertoast.showToast(msg: '已复制联系邮箱: sd0739@sd0739.top');
   }
 
+  void _copyUserId() {
+    if (_userId.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: _userId));
+    Fluttertoast.showToast(msg: '专属 ID 已复制');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,6 +129,38 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         child: Column(
           children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2ECE5)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.badge_outlined, color: Color(0xFF127C44)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('我的专属 ID', style: TextStyle(fontSize: 12, color: Color(0xFF6A7970))),
+                        const SizedBox(height: 3),
+                        Text(
+                          _userId.isEmpty ? '正在读取…' : _userId,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF263A2D)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  TextButton(onPressed: _copyUserId, child: const Text('复制')),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             // 额度绿卡
             Container(
               decoration: BoxDecoration(
@@ -151,7 +191,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _isVip ? '已开通不限次极速解析' : '每日免费 50 次 (00:00 自动刷新)',
+                    _isVip ? '已开通不限次服务' : '每日免费 10 次 (00:00 自动刷新)',
                     style: const TextStyle(fontSize: 12, color: Color(0xFF6A8E77)),
                   ),
                 ],

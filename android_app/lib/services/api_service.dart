@@ -124,7 +124,7 @@ class ApiService {
       }
     } catch (_) {}
     return {
-      'total_quota': 50,
+      'total_quota': 10,
       'bonus_quota': 0,
       'is_vip': false,
     };

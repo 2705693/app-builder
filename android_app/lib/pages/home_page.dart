@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
 
-  int _remainingQuota = 50;
+  int _remainingQuota = 10;
   bool _isVip = false;
 
   final List<String> _platforms = [
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
     final info = await _apiService.fetchUserInfo(uid);
     if (mounted) {
       setState(() {
-        _remainingQuota = info['total_quota'] ?? 50;
+        _remainingQuota = info['total_quota'] ?? 10;
         _isVip = info['is_vip'] ?? false;
       });
     }
@@ -373,7 +373,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
                 Text(
-                  _isVip ? '尊贵会员' : '每日免费 50 次',
+                  _isVip ? '不限次服务' : '每日免费 10 次',
                   style: const TextStyle(fontSize: 12, color: Color(0xFF6A7970)),
                 ),
               ],
