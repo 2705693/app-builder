@@ -213,13 +213,13 @@ class _ProfilePageState extends State<ProfilePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('生成恢复码并妥善保存。卸载重装或更换手机后，输入恢复码即可找回原账号和剩余次数。', style: TextStyle(fontSize: 13, height: 1.5)),
+            const Text('请输入您之前使用的用户ID，或曾经充值过的任意卡密。也可使用已保存的恢复码。', style: TextStyle(fontSize: 13, height: 1.5)),
             const SizedBox(height: 14),
             TextField(
               controller: controller,
               textCapitalization: TextCapitalization.characters,
               decoration: InputDecoration(
-                hintText: '输入已有恢复码',
+                hintText: '输入老用户ID(如wp_xxx)或充值卡密...',
                 prefixIcon: const Icon(Icons.key_outlined),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -257,7 +257,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 return;
               }
               try {
-                final info = await _apiService.restoreRecoveryCode(controller.text);
+                final currentUserId = _userId.isNotEmpty ? _userId : await StorageService.getUserId();
+                final info = await _apiService.recoverAccount(
+                  currentUserId: currentUserId,
+                  credential: controller.text,
+                );
                 final restoredUserId = (info['user_id'] ?? '').toString();
                 if (restoredUserId.isEmpty) throw Exception('服务器未返回用户编号');
                 await StorageService.setUserId(restoredUserId);
@@ -269,7 +273,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Fluttertoast.showToast(msg: e.toString().replaceFirst('Exception: ', ''));
               }
             },
-            child: const Text('恢复账号'),
+            child: const Text('立即找回并绑定'),
           ),
         ],
       ),
@@ -387,6 +391,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   TextButton(onPressed: _copyUserId, child: const Text('复制')),
+                  TextButton(onPressed: _showAccountRecoveryDialog, child: const Text('找回/切换')),
                 ],
               ),
             ),

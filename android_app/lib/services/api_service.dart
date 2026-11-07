@@ -181,4 +181,26 @@ class ApiService {
       throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : '连接服务器失败');
     }
   }
+
+  Future<Map<String, dynamic>> recoverAccount({
+    required String currentUserId,
+    required String credential,
+  }) async {
+    try {
+      final response = await _dio.post('/api/auth/account/recover', data: {
+        'current_user_id': currentUserId,
+        'credential': credential.trim(),
+        'bind_wechat': false,
+      });
+      if (response.data['code'] == 0) {
+        return Map<String, dynamic>.from(response.data['data'] ?? {});
+      }
+      throw Exception(response.data['message'] ?? '账号找回失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null
+          ? data['detail'].toString()
+          : '连接服务器失败');
+    }
+  }
 }
