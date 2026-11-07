@@ -67,7 +67,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp android_app/build/app/outputs/flutter-apk/app-release.apk "yilian-quying-v1.0.2.apk"
+          cp android_app/build/app/outputs/flutter-apk/app-release.apk "yilian-quying-v1.0.3.apk"
           git tag -f android-latest "$GITHUB_SHA"
           git push origin refs/tags/android-latest --force
           gh release view android-latest >/dev/null 2>&1 || \
@@ -77,4 +77,4 @@ jobs:
               case "$asset" in *.apk) gh release delete-asset android-latest "$asset" --yes ;; esac
             done
           gh release edit android-latest --title "一链取影 Android 最新版"
-          gh release upload android-latest "yilian-quying-v1.0.2.apk" --clobber
+          gh release upload android-latest "yilian-quying-v1.0.3.apk" --clobber

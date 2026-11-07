@@ -299,7 +299,7 @@ class _ProfilePageState extends State<ProfilePage> {
         content: const SingleChildScrollView(
           child: Text(
             '仅在你主动点击粘贴时读取剪贴板，在点击保存时请求相册或文件权限。\n\n'
-            '服务使用本机生成的专属 ID 记录额度；仅在您主动使用恢复码时同步账号状态，不要求手机号、头像、昵称或通讯录。\n\n'
+            '为防止卸载重装后免费次数重置，服务会使用安卓系统提供的应用专属匿名设备标识绑定账号额度。该标识不包含手机号、IMEI、序列号、头像、昵称、通讯录或广告信息。您也可以使用恢复码找回账号。\n\n'
             '图片修复等云端任务会将您主动选择的素材加密传输至服务器临时处理；视频号链接会发送给腾讯元宝完成处理。临时素材最多保存24小时。\n\n'
             '我们不会将素材用于AI训练、对外展示或分发，法律法规另有要求或您另行授权的除外。\n\n'
             '您可以撤回系统权限或清空本地历史；清空本地历史不影响剩余次数。\n\n'
@@ -522,7 +522,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             // 版本信息
             const Text(
-              '一链取影 v1.0.2 (Android版)\n多媒体内容提取与图片修复工具',
+              '一链取影 v1.0.3 (Android版)\n多媒体内容提取与图片修复工具',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: Color(0xFFA5B8AC), height: 1.6),
             ),

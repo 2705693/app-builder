@@ -203,4 +203,22 @@ class ApiService {
           : '连接服务器失败');
     }
   }
+
+  Future<String?> authenticateAndroid({
+    required String deviceId,
+    required String legacyUserId,
+  }) async {
+    try {
+      final response = await _dio.post('/api/auth/android', data: {
+        'device_id': deviceId,
+        'legacy_user_id': legacyUserId,
+      });
+      if (response.statusCode == 200 && response.data['code'] == 0) {
+        final data = Map<String, dynamic>.from(response.data['data'] ?? {});
+        final userId = (data['user_id'] ?? '').toString().trim();
+        return userId.isEmpty ? null : userId;
+      }
+    } catch (_) {}
+    return null;
+  }
 }

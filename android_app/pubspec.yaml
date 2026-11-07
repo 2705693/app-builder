@@ -1,7 +1,7 @@
 name: chaoji_huiwan
 description: "一链取影 - 多媒体内容提取与图片修复工具 (安卓端)"
 publish_to: "none"
-version: 1.0.2+3
+version: 1.0.3+4
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -16,6 +16,7 @@ dependencies:
   # 本地文件路径与存储
   path_provider: ^2.1.4
   shared_preferences: ^2.3.2
+  android_id: 0.5.2
 
   # 权限管理（兼容 Android 13+ 新版细粒度媒体权限与旧版存储权限）
   permission_handler: ^11.3.1

@@ -1,22 +1,45 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:android_id/android_id.dart';
 import '../models/history_item.dart';
+import 'api_service.dart';
 
 class StorageService {
   static const String _keyHistory = 'parse_history_list';
   static const String _keyUserId = 'user_unique_id';
   static const String _keyLegalAccepted = 'legal_agreement_accepted_v1';
   static final ValueNotifier<int> historyVersion = ValueNotifier<int>(0);
+  static String? _resolvedUserId;
 
   // 1. 获取或生成稳定的设备用户唯一标识
   static Future<String> getUserId() async {
+    if (_resolvedUserId != null && _resolvedUserId!.isNotEmpty) {
+      return _resolvedUserId!;
+    }
     final sp = await SharedPreferences.getInstance();
     String? uid = sp.getString(_keyUserId);
     if (uid == null || uid.isEmpty) {
       uid = 'android_${DateTime.now().millisecondsSinceEpoch}';
       await sp.setString(_keyUserId, uid);
     }
+    try {
+      const androidIdPlugin = AndroidId();
+      final deviceId = await androidIdPlugin.getId();
+      if (deviceId != null && deviceId.isNotEmpty) {
+        final stableUid = await ApiService().authenticateAndroid(
+          deviceId: deviceId,
+          legacyUserId: uid,
+        );
+        if (stableUid != null && stableUid.isNotEmpty) {
+          uid = stableUid;
+          await sp.setString(_keyUserId, uid);
+        }
+      }
+    } catch (_) {
+      // 无网络或系统不支持时继续使用本地 ID，不影响基本功能。
+    }
+    _resolvedUserId = uid;
     return uid;
   }
 
@@ -25,6 +48,7 @@ class StorageService {
     if (value.isEmpty) return;
     final sp = await SharedPreferences.getInstance();
     await sp.setString(_keyUserId, value);
+    _resolvedUserId = value;
   }
 
   // 2. 保存单条历史记录（最多保留 100 条）
