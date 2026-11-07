@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUser();
   }
 
-  void _loadUser() async {
+  Future<void> _loadUser() async {
     final uid = await StorageService.getUserId();
     final info = await _apiService.fetchUserInfo(uid);
     if (mounted) {
@@ -112,6 +112,84 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_userId.isEmpty) return;
     Clipboard.setData(ClipboardData(text: _userId));
     Fluttertoast.showToast(msg: '专属 ID 已复制');
+  }
+
+  Future<void> _showRedeemDialog() async {
+    final controller = TextEditingController();
+    bool submitting = false;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: !submitting,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: const Text('卡密兑换', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: controller,
+                enabled: !submitting,
+                autofocus: true,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  hintText: '请输入授权卡密兑换码',
+                  prefixIcon: const Icon(Icons.confirmation_number_outlined),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text('输入管理员发放的卡密，可增加使用次数或开通不限次服务。', style: TextStyle(fontSize: 12, color: Color(0xFF6A7970), height: 1.5)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: submitting ? null : () => Navigator.pop(dialogContext),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: submitting
+                  ? null
+                  : () async {
+                      final key = controller.text.trim();
+                      if (key.isEmpty) {
+                        Fluttertoast.showToast(msg: '请输入卡密兑换码');
+                        return;
+                      }
+                      setDialogState(() => submitting = true);
+                      try {
+                        final uid = _userId.isNotEmpty ? _userId : await StorageService.getUserId();
+                        final message = await _apiService.redeemCard(userId: uid, cardKey: key);
+                        if (!dialogContext.mounted) return;
+                        Navigator.pop(dialogContext);
+                        await _loadUser();
+                        if (!mounted) return;
+                        await showDialog<void>(
+                          context: this.context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('兑换成功'),
+                            content: Text(message),
+                            actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('确定'))],
+                          ),
+                        );
+                      } catch (e) {
+                        final message = e.toString().replaceFirst('Exception: ', '');
+                        if (dialogContext.mounted) {
+                          setDialogState(() => submitting = false);
+                          Fluttertoast.showToast(msg: message, toastLength: Toast.LENGTH_LONG);
+                        }
+                      }
+                    },
+              child: submitting
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('立即兑换'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
   }
 
   @override
@@ -226,6 +304,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.feedback_outlined,
                     title: '意见反馈',
                     onTap: () => showDialog(context: context, builder: (_) => const FeedbackDialog()),
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
+                    icon: Icons.confirmation_number_outlined,
+                    title: '卡密兑换',
+                    onTap: _showRedeemDialog,
                   ),
                   const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
                   _MenuItem(

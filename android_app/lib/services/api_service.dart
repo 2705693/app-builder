@@ -129,4 +129,28 @@ class ApiService {
       'is_vip': false,
     };
   }
+
+  // 5. 使用授权卡密增加次数或开通不限次服务
+  Future<String> redeemCard({
+    required String userId,
+    required String cardKey,
+  }) async {
+    try {
+      final response = await _dio.post('/api/user/redeem', data: {
+        'user_id': userId,
+        'card_key': cardKey.trim(),
+      });
+      final data = response.data;
+      if (response.statusCode == 200 && data is Map && data['code'] == 0) {
+        return (data['message'] ?? '兑换成功，额度已到账').toString();
+      }
+      throw Exception('兑换失败，请检查卡密');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      if (data is Map && data['detail'] != null) {
+        throw Exception(data['detail'].toString());
+      }
+      throw Exception('连接服务器失败，请稍后重试');
+    }
+  }
 }
