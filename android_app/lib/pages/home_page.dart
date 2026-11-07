@@ -113,6 +113,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _copyWechatId() {
+    Clipboard.setData(const ClipboardData(text: 'web0739'));
+    Fluttertoast.showToast(msg: '微信号 web0739 已复制');
+  }
+
   // 2. 开始提取
   void _startParse() async {
     if (!await _ensureLegalAccepted()) return;
@@ -344,8 +349,20 @@ class _HomePageState extends State<HomePage> {
                 border: Border.all(color: const Color(0xFFD4EBDC)),
               ),
               child: const Text(
-                '仅可处理本人享有著作权或已取得权利人授权的素材。不得擅自删除他人作品的水印、作者标识或权利管理信息。',
+                '仅可处理本人享有著作权或已取得权利人授权的素材。\n未经许可，不得删除他人作品的水印、作者标识或权利管理信息，不得搬运、传播或商用侵权内容。',
                 style: TextStyle(fontSize: 12, height: 1.5, color: Color(0xFF1F6F43)),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _copyWechatId,
+                icon: const Icon(Icons.wechat, size: 16, color: Color(0xFF127C44)),
+                label: const Text(
+                  '保存视频或图集 · 微信号：web0739（点击复制）',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF4A6A56)),
+                ),
+                style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6)),
               ),
             ),
             const SizedBox(height: 14),
