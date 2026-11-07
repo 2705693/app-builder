@@ -1,10 +1,10 @@
-# 一贴取影 Android APP 维护总结
+# 一链取影 Android APP 维护总结
 
 更新时间：2026-11-07
 
 ## 1. 项目定位
 
-“一贴取影”Android 客户端使用 Flutter 开发，服务地址由 `lib/services/api_service.dart` 统一管理。GitHub 仓库只保存 Android APP 源码和 APK 自动构建流程。
+“一链取影”Android 客户端使用 Flutter 开发，服务地址由 `lib/services/api_service.dart` 统一管理。GitHub 仓库只保存 Android APP 源码和 APK 自动构建流程。
 
 ## 2. 当前主要功能
 
@@ -61,7 +61,7 @@ GitHub Actions 的 ZIP 解压后可得到 `app-release.apk`。
 
 ## 7. 发布前检查
 
-1. 确认桌面名称显示为“一贴取影”。
+1. 确认桌面名称显示为“一链取影”。
 2. 确认首次版权提示、《用户协议》和《隐私政策》可以打开。
 3. 确认每日免费额度显示 10 次，专属 ID 可复制。
 4. 测试链接提取、本地视频选择、卡密兑换和意见反馈。
@@ -75,3 +75,15 @@ GitHub Actions 的 ZIP 解压后可得到 `app-release.apk`。
 - 不得把真实 Cookie、卡密、后台密码或邮件授权码写入代码和文档。
 - 不得提交 APK、ZIP、数据库、缓存或用户素材。
 - 修改功能后必须通过 GitHub Actions 构建成功再交付安装包。
+
+## 9. 账号找回与卸载重装自动恢复（2026-11-07）
+
+- 当前版本：`1.0.3+4`，发布文件 `yilian-quying-v1.0.3.apk`；
+- 用户 ID 旁和功能菜单提供“找回/切换”，支持老用户 ID、已使用卡密和恢复码；
+- 恢复码生成后自动复制，并提供“一键复制”按钮；
+- `StorageService.getUserId()` 使用 `android_id 0.5.2` 取得应用专属匿名设备标识；
+- `ApiService.authenticateAndroid()` 调用 `POST /api/auth/android`，首次升级继承当前本地账号，以后同一签名 APK 重装自动恢复；
+- 服务器只保存 HMAC 摘要，不保存明文设备标识；隐私政策已披露该用途；
+- 自动恢复不替代恢复码：恢复出厂、系统用户变化或 APK 签名变化时，仍需恢复码/旧 ID/已使用卡密。
+
+构建记录：功能提交 `85c0ef1` 首次因 Dart 可空类型失败；修复提交 `02a46ba` 将返回值明确为非空。正式发布必须配置固定 release keystore，否则不同构建的签名可能变化，影响覆盖安装及设备身份连续性。
