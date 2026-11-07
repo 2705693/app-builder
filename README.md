@@ -21,3 +21,7 @@
 - 不要提交密码、Cookie、Token、SMTP 授权码、私钥或服务器配置。
 - 运行时服务地址位于 `android_app/lib/services/api_service.dart`。
 - 本仓库仅保留 Android APP 构建所需文件。
+
+## 维护文档
+
+完整的功能、隐私、安全与发布记录见 [`android_app/MAINTENANCE_SUMMARY.md`](android_app/MAINTENANCE_SUMMARY.md)。
