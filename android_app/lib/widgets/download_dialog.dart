@@ -16,10 +16,12 @@ class DownloadDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final percent = (progress * 100).toInt().clamp(0, 100);
 
-    return WillPopScope(
-      onWillPop: () async {
-        onCancel();
-        return true;
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          onCancel();
+        }
       },
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -98,13 +100,13 @@ class DownloadDialog extends StatelessWidget {
                   color: const Color(0xFFF6F8F7),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('💡', style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
+                    const Text('💡', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
+                      child: const Text(
                         '如遇超长视频下载较慢，可停止后复制下载链接用手机浏览器下载。',
                         style: TextStyle(fontSize: 12, color: Color(0xFF6C7C72), height: 1.4),
                       ),
