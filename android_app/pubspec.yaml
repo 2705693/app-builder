@@ -1,0 +1,45 @@
+name: chaoji_huiwan
+description: "一贴取影 - 多媒体内容提取与图片修复工具 (安卓端)"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 网络请求与极速流式下载（支持断点续传、进度回调、秒级停止）
+  dio: ^5.7.0
+  
+  # 本地文件路径与存储
+  path_provider: ^2.1.4
+  shared_preferences: ^2.3.2
+
+  # 权限管理（兼容 Android 13+ 新版细粒度媒体权限与旧版存储权限）
+  permission_handler: ^11.3.1
+
+  # 原生相册极速保存（直接存入系统相册 DCIM 并刷新图库）
+  # 5.x 使用 Android Flutter embedding v2；3.x 仍引用已移除的 Registrar API。
+  image_gallery_saver_plus: ^5.1.1
+  image_picker: ^1.1.2
+
+  # 视频播放器与全屏控制器
+  video_player: ^2.9.2
+  chewie: ^1.8.5
+
+  # 高性能网络图片加载与离线缓存
+  cached_network_image: ^3.4.1
+
+  # 剪贴板与设备交互工具
+  fluttertoast: ^8.2.8
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
