@@ -192,6 +192,52 @@ class _ProfilePageState extends State<ProfilePage> {
     controller.dispose();
   }
 
+  void _showPrivacyPolicy() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('隐私与使用说明', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: const SingleChildScrollView(
+          child: Text(
+            '仅在你主动点击粘贴时读取剪贴板，在点击保存时请求相册或文件权限。\n\n'
+            '服务使用本机生成的专属设备 ID 记录额度，不要求手机号、头像、昵称或通讯录。\n\n'
+            '临时文件最多保存24小时，服务器提取与操作日志最多保留30天；“清空历史记录”仅清除手机本地记录。\n\n'
+            '视频号链接会发送给腾讯元宝以进行解析；意见反馈会提交给开发者。\n\n'
+            '请仅处理本人或已获授权的内容。\n\n'
+            '隐私联系邮箱：sd0739@sd0739.top',
+            style: TextStyle(fontSize: 14, height: 1.6, color: Color(0xFF405047)),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('我知道了')),
+        ],
+      ),
+    );
+  }
+
+  void _confirmClearHistory() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('清空历史记录', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: const Text('确定要清空手机本地保存的全部历史记录吗？此操作无法撤销，不会影响服务器日志和剩余次数。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          TextButton(
+            onPressed: () async {
+              await StorageService.clearHistory();
+              if (!ctx.mounted) return;
+              Navigator.pop(ctx);
+              Fluttertoast.showToast(msg: '本地历史已清空');
+            },
+            child: const Text('确认清空', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -313,12 +359,31 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
                   _MenuItem(
+                    icon: Icons.shield_outlined,
+                    title: '隐私政策',
+                    onTap: _showPrivacyPolicy,
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
                     icon: Icons.mail_outline_rounded,
                     title: '联系邮箱',
                     trailingText: 'sd0739@sd0739.top',
                     onTap: _copyEmail,
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 10, offset: Offset(0, 3))],
+              ),
+              child: _MenuItem(
+                icon: Icons.delete_outline_rounded,
+                title: '清空历史记录',
+                onTap: _confirmClearHistory,
               ),
             ),
             const SizedBox(height: 24),

@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/history_item.dart';
 
 class StorageService {
   static const String _keyHistory = 'parse_history_list';
   static const String _keyUserId = 'user_unique_id';
+  static final ValueNotifier<int> historyVersion = ValueNotifier<int>(0);
 
   // 1. 获取或生成稳定的设备用户唯一标识
   static Future<String> getUserId() async {
@@ -32,6 +34,7 @@ class StorageService {
 
     final jsonList = list.map((e) => e.toJson()).toList();
     await sp.setString(_keyHistory, jsonEncode(jsonList));
+    historyVersion.value++;
   }
 
   // 3. 读取所有历史记录
@@ -52,5 +55,6 @@ class StorageService {
   static Future<void> clearHistory() async {
     final sp = await SharedPreferences.getInstance();
     await sp.remove(_keyHistory);
+    historyVersion.value++;
   }
 }
