@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _initVideoPlayer(String url, {bool local = false}) async {
+  Future<void> _initVideoPlayer(String url, {bool local = false}) async {
     _disposePlayer();
     _videoPlayerController = local
         ? VideoPlayerController.file(File(url))
