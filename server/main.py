@@ -1854,10 +1854,12 @@ def proxy_stream(
         imac_url = f"https://sp.sd0739.top:28443/?url={requests.utils.quote(url)}"
         r_imac = requests.get(imac_url, stream=True, timeout=3.0, verify=False)
         if r_imac.status_code == 200:
+            print(f"[Proxy Route] >>> 成功命中【国内 iMac 千兆光纤节点】>>>: {url[:60]}", flush=True)
             disposition = "attachment" if download else "inline"
             imac_headers = {
                 "Content-Disposition": f'{disposition}; filename="video.mp4"',
-                "Accept-Ranges": "bytes"
+                "Accept-Ranges": "bytes",
+                "X-Proxy-Node": "iMac-Domestic-Gigabit"
             }
             if "content-length" in r_imac.headers:
                 imac_headers["Content-Length"] = r_imac.headers["content-length"]
@@ -1867,8 +1869,8 @@ def proxy_stream(
                 media_type=r_imac.headers.get("content-type", "video/mp4"),
                 headers=imac_headers
             )
-    except Exception:
-        pass  # 国内 iMac 离线、睡眠或超时，自动无缝降级执行下方 VPS 本地直连
+    except Exception as e_imac:
+        print(f"[Proxy Route] !!! 国内 iMac 离线/超时 ({e_imac})，自动降级切换【VPS 本地节点】!!!: {url[:60]}", flush=True)
 
     # 🚀 2. 备用容灾方案：VPS 本地直连下载
     try:
@@ -1914,9 +1916,11 @@ def proxy_stream(
             raise HTTPException(status_code=502, detail="上游视频源返回了错误页面，非媒体数据")
 
         disposition = "attachment" if download else "inline"
+        print(f"[Proxy Route] === 正在使用【海外 VPS 本地节点】下载传输 ===: {url[:60]}", flush=True)
         resp_headers = {
             "Content-Disposition": f'{disposition}; filename="video.mp4"',
-            "Accept-Ranges": "bytes"
+            "Accept-Ranges": "bytes",
+            "X-Proxy-Node": "VPS-Local-Backup"
         }
         if "content-length" in r.headers:
             resp_headers["Content-Length"] = r.headers["content-length"]
