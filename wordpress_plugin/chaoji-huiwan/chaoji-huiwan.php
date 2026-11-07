@@ -32,6 +32,9 @@ class ChaojiHuiwanPlugin {
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_shortcode('chaoji_video_parser', [$this, 'render_shortcode']);
+        add_filter('category_description', 'do_shortcode');
+        add_filter('term_description', 'do_shortcode');
+        add_filter('widget_text', 'do_shortcode');
         add_action('wp_enqueue_scripts', [$this, 'register_assets']);
     }
 
