@@ -31,10 +31,10 @@ class DownloadService {
 
     try {
       // 1. 检查或申请相册访问与写入权限
-      final hasAccess = await Gal.hasAccess(toAlbum: true);
+      bool hasAccess = await Gal.hasAccess();
       if (!hasAccess) {
-        final requestGranted = await Gal.requestAccess(toAlbum: true);
-        if (!requestGranted) {
+        hasAccess = await Gal.requestAccess();
+        if (!hasAccess) {
           throw Exception('未授予相册存储权限，无法保存视频');
         }
       }
@@ -88,10 +88,10 @@ class DownloadService {
     required List<String> imageUrls,
     required Function(int current, int total) onProgress,
   }) async {
-    final hasAccess = await Gal.hasAccess(toAlbum: true);
+    bool hasAccess = await Gal.hasAccess();
     if (!hasAccess) {
-      final requestGranted = await Gal.requestAccess(toAlbum: true);
-      if (!requestGranted) {
+      hasAccess = await Gal.requestAccess();
+      if (!hasAccess) {
         throw Exception('未授予相册存储权限');
       }
     }
