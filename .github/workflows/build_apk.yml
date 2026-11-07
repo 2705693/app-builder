@@ -67,9 +67,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp android_app/build/app/outputs/flutter-apk/app-release.apk "一贴取影.apk"
+          cp android_app/build/app/outputs/flutter-apk/app-release.apk "yilian-quying-v1.0.1.apk"
           git tag -f android-latest "$GITHUB_SHA"
           git push origin refs/tags/android-latest --force
           gh release view android-latest >/dev/null 2>&1 || \
             gh release create android-latest --title "一贴取影 Android 最新版" --notes "由 GitHub Actions 自动构建。"
-          gh release upload android-latest "一贴取影.apk" --clobber
+          gh release view android-latest --json assets --jq '.assets[].name' | \
+            while read -r asset; do
+              case "$asset" in *.apk) gh release delete-asset android-latest "$asset" --yes ;; esac
+            done
+          gh release upload android-latest "yilian-quying-v1.0.1.apk" --clobber
