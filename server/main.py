@@ -1849,6 +1849,28 @@ def proxy_stream(
     url: str = Query(..., description="目标媒体直链"),
     download: int = Query(0, description="是否作为附件下载"),
 ):
+    # 🚀 1. 优先尝试国内家庭千兆 iMac 节点 (sp.sd0739.top:28443)
+    try:
+        imac_url = f"https://sp.sd0739.top:28443/?url={requests.utils.quote(url)}"
+        r_imac = requests.get(imac_url, stream=True, timeout=3.0, verify=False)
+        if r_imac.status_code == 200:
+            disposition = "attachment" if download else "inline"
+            imac_headers = {
+                "Content-Disposition": f'{disposition}; filename="video.mp4"',
+                "Accept-Ranges": "bytes"
+            }
+            if "content-length" in r_imac.headers:
+                imac_headers["Content-Length"] = r_imac.headers["content-length"]
+            return StreamingResponse(
+                r_imac.iter_content(chunk_size=1024 * 512),
+                status_code=200,
+                media_type=r_imac.headers.get("content-type", "video/mp4"),
+                headers=imac_headers
+            )
+    except Exception:
+        pass  # 国内 iMac 离线、睡眠或超时，自动无缝降级执行下方 VPS 本地直连
+
+    # 🚀 2. 备用容灾方案：VPS 本地直连下载
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
