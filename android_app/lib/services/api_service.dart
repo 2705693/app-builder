@@ -153,4 +153,32 @@ class ApiService {
       throw Exception('连接服务器失败，请稍后重试');
     }
   }
+
+  Future<String> createRecoveryCode(String userId) async {
+    try {
+      final response = await _dio.post('/api/auth/recovery/create', data: {'user_id': userId});
+      final data = Map<String, dynamic>.from(response.data['data'] ?? {});
+      final code = (data['recovery_code'] ?? '').toString();
+      if (response.data['code'] == 0 && code.isNotEmpty) return code;
+      throw Exception(response.data['message'] ?? '恢复码生成失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : '连接服务器失败');
+    }
+  }
+
+  Future<Map<String, dynamic>> restoreRecoveryCode(String recoveryCode) async {
+    try {
+      final response = await _dio.post('/api/auth/recovery/restore', data: {
+        'recovery_code': recoveryCode.trim(),
+      });
+      if (response.data['code'] == 0) {
+        return Map<String, dynamic>.from(response.data['data'] ?? {});
+      }
+      throw Exception(response.data['message'] ?? '账号恢复失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : '连接服务器失败');
+    }
+  }
 }

@@ -20,6 +20,13 @@ class StorageService {
     return uid;
   }
 
+  static Future<void> setUserId(String userId) async {
+    final value = userId.trim();
+    if (value.isEmpty) return;
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(_keyUserId, value);
+  }
+
   // 2. 保存单条历史记录（最多保留 100 条）
   static Future<void> addHistory(HistoryItem item) async {
     final sp = await SharedPreferences.getInstance();

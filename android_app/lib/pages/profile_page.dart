@@ -202,6 +202,81 @@ class _ProfilePageState extends State<ProfilePage> {
     controller.dispose();
   }
 
+  Future<void> _showAccountRecoveryDialog() async {
+    final controller = TextEditingController();
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text('账号备份与恢复', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('生成恢复码并妥善保存。卸载重装或更换手机后，输入恢复码即可找回原账号和剩余次数。', style: TextStyle(fontSize: 13, height: 1.5)),
+            const SizedBox(height: 14),
+            TextField(
+              controller: controller,
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                hintText: '输入已有恢复码',
+                prefixIcon: const Icon(Icons.key_outlined),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('取消')),
+          TextButton(
+            onPressed: () async {
+              try {
+                final uid = _userId.isNotEmpty ? _userId : await StorageService.getUserId();
+                final code = await _apiService.createRecoveryCode(uid);
+                await Clipboard.setData(ClipboardData(text: code));
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+                await showDialog<void>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('恢复码已生成'),
+                    content: SelectableText('$code\n\n已自动复制。新生成恢复码后，旧恢复码将失效。'),
+                    actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('我已保存'))],
+                  ),
+                );
+              } catch (e) {
+                Fluttertoast.showToast(msg: e.toString().replaceFirst('Exception: ', ''));
+              }
+            },
+            child: const Text('生成恢复码'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (controller.text.trim().isEmpty) {
+                Fluttertoast.showToast(msg: '请先输入恢复码');
+                return;
+              }
+              try {
+                final info = await _apiService.restoreRecoveryCode(controller.text);
+                final restoredUserId = (info['user_id'] ?? '').toString();
+                if (restoredUserId.isEmpty) throw Exception('服务器未返回用户编号');
+                await StorageService.setUserId(restoredUserId);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+                await _loadUser();
+                Fluttertoast.showToast(msg: '账号和剩余次数已恢复');
+              } catch (e) {
+                Fluttertoast.showToast(msg: e.toString().replaceFirst('Exception: ', ''));
+              }
+            },
+            child: const Text('恢复账号'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
   void _showPrivacyPolicy() {
     showDialog<void>(
       context: context,
@@ -211,7 +286,7 @@ class _ProfilePageState extends State<ProfilePage> {
         content: const SingleChildScrollView(
           child: Text(
             '仅在你主动点击粘贴时读取剪贴板，在点击保存时请求相册或文件权限。\n\n'
-            '服务使用本机生成的专属设备 ID 记录额度，不要求手机号、头像、昵称或通讯录。\n\n'
+            '服务使用本机生成的专属 ID 记录额度；仅在您主动使用恢复码时同步账号状态，不要求手机号、头像、昵称或通讯录。\n\n'
             '图片修复等云端任务会将您主动选择的素材加密传输至服务器临时处理；视频号链接会发送给腾讯元宝完成处理。临时素材最多保存24小时。\n\n'
             '我们不会将素材用于AI训练、对外展示或分发，法律法规另有要求或您另行授权的除外。\n\n'
             '您可以撤回系统权限或清空本地历史；清空本地历史不影响剩余次数。\n\n'
@@ -387,6 +462,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: Icons.confirmation_number_outlined,
                     title: '卡密兑换',
                     onTap: _showRedeemDialog,
+                  ),
+                  const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
+                  _MenuItem(
+                    icon: Icons.key_outlined,
+                    title: '账号备份与恢复',
+                    onTap: _showAccountRecoveryDialog,
                   ),
                   const Divider(height: 1, indent: 50, color: Color(0xFFF0F4F1)),
                   _MenuItem(
