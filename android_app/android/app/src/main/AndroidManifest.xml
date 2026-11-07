@@ -7,7 +7,7 @@
 
     <!-- 兼容 Android 12 及以下版本的存储权限 -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <!-- 兼容 Android 13+ 新版媒体权限（保存图片与视频到相册必需） -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
