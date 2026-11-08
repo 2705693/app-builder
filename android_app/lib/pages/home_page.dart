@@ -519,6 +519,9 @@ class _HomePageState extends State<HomePage> {
         final data = await _apiService.extractLocalVideoAudio(File(_result!.videoUrl));
         final url = (data['download_url'] ?? '').toString();
         if (url.isEmpty) throw Exception('服务器没有返回 MP3 下载地址');
+        final uid = await StorageService.getUserId();
+        await _apiService.consumeQuota(userId: uid, feature: 'local_video_audio');
+        await _loadUserInfo();
         if (mounted) {
           setState(() => _extractingAudio = false);
           await _showAudioActions(url, (data['title'] ?? '本地视频原声.mp3').toString());
@@ -526,7 +529,12 @@ class _HomePageState extends State<HomePage> {
       } catch (error) {
         if (mounted) {
           setState(() => _extractingAudio = false);
-          _showErrorDialog(error.toString().replaceFirst('Exception: ', ''));
+          final message = error.toString().replaceFirst('Exception: ', '');
+          if (message.contains('次数已用尽') || message.contains('次数不足') || message.contains('今日可用次数')) {
+            _showQuotaLimitDialog();
+          } else {
+            _showErrorDialog(message);
+          }
         }
       }
       return;
@@ -642,7 +650,7 @@ class _HomePageState extends State<HomePage> {
     StateSetter? dialogSetState;
     var dialogOpen = true;
     BuildContext? dialogContext;
-    showDialog<void>(
+    final dialogFuture = showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(builder: (_, setState) {
@@ -653,11 +661,15 @@ class _HomePageState extends State<HomePage> {
           sizeText: sizeText,
           onCancel: () {
             _downloadService.cancelDownload();
-            if (dialogOpen) Navigator.pop(ctx);
+            if (dialogOpen && Navigator.of(ctx).canPop()) {
+              dialogOpen = false;
+              Navigator.of(ctx).pop();
+            }
           },
         );
       }),
-    ).whenComplete(() => dialogOpen = false);
+    );
+    dialogFuture.whenComplete(() => dialogOpen = false);
     try {
       await _downloadService.downloadAndSaveAudio(
         audioUrl: url,
@@ -670,10 +682,16 @@ class _HomePageState extends State<HomePage> {
           if (dialogOpen) dialogSetState?.call(() {});
         },
       );
-      if (dialogOpen && dialogContext != null && dialogContext!.mounted) Navigator.pop(dialogContext!);
+      if (dialogOpen && dialogContext != null && dialogContext!.mounted && Navigator.of(dialogContext!).canPop()) {
+        dialogOpen = false;
+        Navigator.of(dialogContext!).pop();
+      }
       Fluttertoast.showToast(msg: 'MP3 已保存到“下载/一链取影”目录');
     } catch (error) {
-      if (dialogOpen && dialogContext != null && dialogContext!.mounted) Navigator.pop(dialogContext!);
+      if (dialogOpen && dialogContext != null && dialogContext!.mounted && Navigator.of(dialogContext!).canPop()) {
+        dialogOpen = false;
+        Navigator.of(dialogContext!).pop();
+      }
       final message = error.toString().replaceFirst('Exception: ', '');
       if (message != '已停止下载') _showErrorDialog(message);
     }

@@ -27,11 +27,18 @@ class MainActivity: FlutterActivity() {
                 result.error("INVALID_PATH", "音频临时文件不存在", null)
                 return@setMethodCallHandler
             }
-            try {
-                result.success(saveAudio(File(sourcePath), displayName))
-            } catch (error: Exception) {
-                result.error("SAVE_FAILED", error.message ?: "保存音频失败", null)
-            }
+            // 文件复制必须离开 Android 主线程，否则较大的音频会阻塞 Flutter
+            // 渲染并出现黑屏或“应用无响应”。结果再切回主线程回传。
+            Thread {
+                try {
+                    val savedPath = saveAudio(File(sourcePath), displayName)
+                    runOnUiThread { result.success(savedPath) }
+                } catch (error: Exception) {
+                    runOnUiThread {
+                        result.error("SAVE_FAILED", error.message ?: "保存音频失败", null)
+                    }
+                }
+            }.start()
         }
     }
 
