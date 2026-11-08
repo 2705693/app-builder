@@ -14,6 +14,7 @@ import '../services/download_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/download_dialog.dart';
 import 'image_repair_page.dart';
+import 'image_resize_page.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int) onTabChange;
@@ -32,6 +33,7 @@ class _HomePageState extends State<HomePage> {
 
   bool _parsing = false;
   bool _extractingAudio = false;
+  bool _processingVideo = false;
   ParseResult? _result;
   VideoPlayerController? _videoPlayerController;
   VideoPlayerController? _audioPlayerController;
@@ -177,9 +179,28 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       if (mounted) {
         setState(() => _parsing = false);
-        _showErrorDialog(e.toString().replaceAll('Exception: ', ''));
+        final message = e.toString().replaceAll('Exception: ', '');
+        if (message.contains('次数已用尽') || message.contains('次数不足')) {
+          _showQuotaLimitDialog();
+        } else {
+          _showErrorDialog(message);
+        }
       }
     }
+  }
+
+  void _showQuotaLimitDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('今日次数已用完', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: const Text('今日次数已用完，请明日再试或通过意见反馈/联系我们。'),
+        actions: [
+          FilledButton(onPressed: () => Navigator.pop(ctx), child: const Text('我知道了')),
+        ],
+      ),
+    );
   }
 
   Future<void> _initVideoPlayer(String url, {bool local = false}) async {
@@ -221,6 +242,158 @@ class _HomePageState extends State<HomePage> {
       _isLocalVideo = true;
     });
     await _initVideoPlayer(picked.path, local: true);
+  }
+
+  Future<void> _runLocalVideoProcess(
+    String endpoint,
+    Map<String, dynamic> fields,
+    String resultLabel, {
+    File? image,
+  }) async {
+    if (_result == null || !_isLocalVideo || _processingVideo) return;
+    setState(() => _processingVideo = true);
+    try {
+      final url = await _apiService.processLocalVideo(
+        File(_result!.videoUrl), endpoint, fields, image: image,
+      );
+      final old = _result!;
+      await _initVideoPlayer(url);
+      if (!mounted) return;
+      setState(() {
+        _result = ParseResult(
+          platform: '本地素材', type: 'video',
+          title: '${old.title} · $resultLabel', author: old.author,
+          coverUrl: '', videoUrl: url, originUrl: url, images: const [],
+        );
+        _isLocalVideo = false;
+        _processingVideo = false;
+      });
+      await _loadUserInfo();
+      Fluttertoast.showToast(msg: '$resultLabel完成，可预览并保存');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _processingVideo = false);
+      final message = error.toString().replaceFirst('Exception: ', '');
+      if (message.contains('次数已用尽') || message.contains('次数不足')) {
+        _showQuotaLimitDialog();
+      } else {
+        _showErrorDialog(message);
+      }
+    }
+  }
+
+  Future<void> _showTrimDialog() async {
+    final startCtrl = TextEditingController(text: '0');
+    final endCtrl = TextEditingController(text: '15');
+    final values = await showDialog<List<double>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('时长裁剪'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: startCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '开始时间（秒）')),
+          TextField(controller: endCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: '结束时间（秒）')),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(onPressed: () {
+            final start = double.tryParse(startCtrl.text.trim());
+            final end = double.tryParse(endCtrl.text.trim());
+            if (start == null || end == null || start < 0 || end <= start) {
+              Fluttertoast.showToast(msg: '结束时间必须大于开始时间');
+              return;
+            }
+            Navigator.pop(ctx, [start, end]);
+          }, child: const Text('开始处理')),
+        ],
+      ),
+    );
+    startCtrl.dispose();
+    endCtrl.dispose();
+    if (values == null) return;
+    await _runLocalVideoProcess('/api/video/trim', {
+      'start': values[0].toString(), 'end': values[1].toString(),
+    }, '时长裁剪');
+  }
+
+  Future<void> _showAreaProcessDialog() async {
+    var position = 'bottom_right';
+    var method = 'blur';
+    final values = await showDialog<List<String>>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('局部处理'),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            DropdownButtonFormField<String>(
+              value: position, decoration: const InputDecoration(labelText: '区域位置'),
+              items: const [
+                DropdownMenuItem(value: 'top_left', child: Text('左上角')),
+                DropdownMenuItem(value: 'top_right', child: Text('右上角')),
+                DropdownMenuItem(value: 'center', child: Text('画面中央')),
+                DropdownMenuItem(value: 'bottom_left', child: Text('左下角')),
+                DropdownMenuItem(value: 'bottom_right', child: Text('右下角')),
+              ],
+              onChanged: (value) => setDialogState(() => position = value!),
+            ),
+            DropdownButtonFormField<String>(
+              value: method, decoration: const InputDecoration(labelText: '处理方式'),
+              items: const [
+                DropdownMenuItem(value: 'blur', child: Text('柔化处理')),
+                DropdownMenuItem(value: 'delogo', child: Text('智能修补')),
+              ],
+              onChanged: (value) => setDialogState(() => method = value!),
+            ),
+          ]),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, [position, method]), child: const Text('开始处理')),
+          ],
+        ),
+      ),
+    );
+    if (values == null) return;
+    await _runLocalVideoProcess('/api/video/remove_mark', {
+      'position': values[0], 'method': values[1],
+    }, '局部处理');
+  }
+
+  Future<void> _showAddSignDialog() async {
+    final type = await showModalBottomSheet<String>(
+      context: context, showDragHandle: true,
+      builder: (ctx) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const ListTile(title: Text('添加内容标识', style: TextStyle(fontWeight: FontWeight.bold))),
+        ListTile(leading: const Icon(Icons.text_fields_rounded), title: const Text('添加文字标识'), onTap: () => Navigator.pop(ctx, 'text')),
+        ListTile(leading: const Icon(Icons.image_outlined), title: const Text('添加图片标识'), onTap: () => Navigator.pop(ctx, 'image')),
+      ])),
+    );
+    if (type == 'text') {
+      final ctrl = TextEditingController();
+      final text = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('文字标识'),
+          content: TextField(controller: ctrl, maxLength: 30, decoration: const InputDecoration(hintText: '请输入要添加的文字')),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            FilledButton(onPressed: () {
+              final value = ctrl.text.trim();
+              if (value.isNotEmpty) Navigator.pop(ctx, value);
+            }, child: const Text('开始处理')),
+          ],
+        ),
+      );
+      ctrl.dispose();
+      if (text == null) return;
+      await _runLocalVideoProcess('/api/video/add_sign', {
+        'text': text, 'position': 'bottom_right',
+      }, '添加文字标识');
+    } else if (type == 'image') {
+      final picked = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 95);
+      if (picked == null) return;
+      await _runLocalVideoProcess('/api/video/add_sign', {
+        'text': '', 'position': 'bottom_right',
+      }, '添加图片标识', image: File(picked.path));
+    }
   }
 
   void _showErrorDialog(String msg) {
@@ -339,7 +512,25 @@ class _HomePageState extends State<HomePage> {
 
   // 6. 从解析结果提取标准 MP3 音频
   Future<void> _extractAudio() async {
-    if (_result == null || _extractingAudio || _isLocalVideo) return;
+    if (_result == null || _extractingAudio) return;
+    if (_isLocalVideo) {
+      setState(() => _extractingAudio = true);
+      try {
+        final data = await _apiService.extractLocalVideoAudio(File(_result!.videoUrl));
+        final url = (data['download_url'] ?? '').toString();
+        if (url.isEmpty) throw Exception('服务器没有返回 MP3 下载地址');
+        if (mounted) {
+          setState(() => _extractingAudio = false);
+          await _showAudioActions(url, (data['title'] ?? '本地视频原声.mp3').toString());
+        }
+      } catch (error) {
+        if (mounted) {
+          setState(() => _extractingAudio = false);
+          _showErrorDialog(error.toString().replaceFirst('Exception: ', ''));
+        }
+      }
+      return;
+    }
     var targetUrl = _result!.originUrl.trim();
     if (targetUrl.isEmpty) targetUrl = _result!.videoUrl.trim();
     if (!targetUrl.startsWith('http')) {
@@ -632,15 +823,29 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10),
 
-            // 局部修复快捷入口
+            // 图片修复快捷入口
             SizedBox(
               height: 40,
               child: OutlinedButton.icon(
                 onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageRepairPage())),
                 icon: const Icon(Icons.auto_fix_high_rounded, size: 16, color: Color(0xFF6246A8)),
-                label: const Text('图片局部修复（擦除多余元素）', style: TextStyle(color: Color(0xFF6246A8), fontSize: 13, fontWeight: FontWeight.bold)),
+                label: const Text('图片修复', style: TextStyle(color: Color(0xFF6246A8), fontSize: 13, fontWeight: FontWeight.bold)),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: const Color(0xFFF2EDFF),
+                  side: BorderSide.none,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 40,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageResizePage())),
+                icon: const Icon(Icons.aspect_ratio_rounded, size: 16, color: Color(0xFF127C44)),
+                label: const Text('常用头像与封面尺寸转换', style: TextStyle(color: Color(0xFF127C44), fontSize: 13, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEAF7EF),
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -759,9 +964,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            if (!_isLocalVideo) ...[
-              const SizedBox(height: 10),
-              SizedBox(
+            const SizedBox(height: 10),
+            SizedBox(
                 width: double.infinity,
                 height: 44,
                 child: OutlinedButton.icon(
@@ -778,6 +982,30 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
+            if (_isLocalVideo) ...[
+              const SizedBox(height: 10),
+              if (_processingVideo)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                      SizedBox(width: 10),
+                      Text('视频处理中，请勿退出...'),
+                    ],
+                  ),
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(child: OutlinedButton(onPressed: _showTrimDialog, child: const Text('时长裁剪'))),
+                    const SizedBox(width: 8),
+                    Expanded(child: OutlinedButton(onPressed: _showAreaProcessDialog, child: const Text('局部处理'))),
+                    const SizedBox(width: 8),
+                    Expanded(child: OutlinedButton(onPressed: _showAddSignDialog, child: const Text('添加标识'))),
+                  ],
+                ),
             ],
           ],
 
@@ -812,7 +1040,7 @@ class _HomePageState extends State<HomePage> {
                             MaterialPageRoute(builder: (_) => ImageRepairPage(initialImageUrl: imgUrl)),
                           );
                         },
-                        child: const Text('局部修复', style: TextStyle(fontSize: 11, color: Color(0xFF6246A8), fontWeight: FontWeight.w600)),
+                        child: const Text('图片修复', style: TextStyle(fontSize: 11, color: Color(0xFF6246A8), fontWeight: FontWeight.w600)),
                       ),
                     ],
                   );

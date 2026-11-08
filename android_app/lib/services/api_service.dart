@@ -130,6 +130,26 @@ class ApiService {
     };
   }
 
+  Future<Map<String, dynamic>> consumeQuota({
+    required String userId,
+    required String feature,
+  }) async {
+    try {
+      final response = await _dio.post('/api/quota/consume', data: {
+        'user_id': userId,
+        'feature': feature,
+      });
+      final body = response.data;
+      if (response.statusCode == 200 && body is Map && body['code'] == 0) {
+        return Map<String, dynamic>.from(body['data'] ?? {});
+      }
+      throw Exception(body is Map ? (body['message'] ?? '今日可用次数已用尽') : '额度扣减失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : '额度服务连接失败');
+    }
+  }
+
   // 5. 使用授权卡密增加次数或开通不限次服务
   Future<String> redeemCard({
     required String userId,
@@ -265,6 +285,53 @@ class ApiService {
       throw Exception(data is Map && data['detail'] != null
           ? data['detail'].toString()
           : '音频任务查询失败');
+    }
+  }
+
+  Future<Map<String, dynamic>> extractLocalVideoAudio(File videoFile) async {
+    final form = FormData.fromMap({
+      'file': await MultipartFile.fromFile(videoFile.path, filename: 'local-video.mp4'),
+      'quality': '192k',
+    });
+    try {
+      final response = await _dio.post(
+        '/api/video/extract_local_audio',
+        data: form,
+        options: Options(sendTimeout: const Duration(minutes: 5), receiveTimeout: const Duration(minutes: 5)),
+      );
+      final body = response.data;
+      if (response.statusCode == 200 && body is Map && body['code'] == 0) {
+        final data = Map<String, dynamic>.from(body['data'] ?? {});
+        var url = (data['download_url'] ?? '').toString();
+        if (url.startsWith('/')) url = '$baseUrl$url';
+        data['download_url'] = url;
+        return data;
+      }
+      throw Exception(body is Map ? (body['detail'] ?? body['msg'] ?? '音频提取失败') : '音频提取失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null ? data['detail'].toString() : '本地视频上传或转码失败');
+    }
+  }
+
+  Future<String> processLocalVideo(File file, String endpoint, Map<String, dynamic> fields, {File? image}) async {
+    final data = <String, dynamic>{
+      'file': await MultipartFile.fromFile(file.path, filename: 'local-video.mp4'),
+      ...fields,
+    };
+    if (image != null) data['image'] = await MultipartFile.fromFile(image.path, filename: 'sign.png');
+    try {
+      final response = await _dio.post(endpoint, data: FormData.fromMap(data), options: Options(sendTimeout: const Duration(minutes: 5), receiveTimeout: const Duration(minutes: 5)));
+      final body = response.data;
+      if (response.statusCode == 200 && body is Map && body['code'] == 0) {
+        var url = (body['data']?['video_url'] ?? '').toString();
+        if (url.startsWith('/')) url = '$baseUrl$url';
+        if (url.isNotEmpty) return url;
+      }
+      throw Exception(body is Map ? (body['detail'] ?? body['msg'] ?? '视频处理失败') : '视频处理失败');
+    } on DioException catch (e) {
+      final body = e.response?.data;
+      throw Exception(body is Map && body['detail'] != null ? body['detail'].toString() : '视频上传或处理失败');
     }
   }
 }
