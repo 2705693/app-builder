@@ -148,7 +148,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
       appBar: AppBar(
-        title: const Text('提取记录', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text('操作与提取记录', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.white,
@@ -171,7 +171,7 @@ class _HistoryPageState extends State<HistoryPage> {
                     children: [
                       Icon(Icons.history_rounded, size: 54, color: Color(0xFFCAD8CE)),
                       SizedBox(height: 12),
-                      Text('暂无提取记录', style: TextStyle(color: Color(0xFF8A9990), fontSize: 14)),
+                      Text('暂无操作记录', style: TextStyle(color: Color(0xFF8A9990), fontSize: 14)),
                     ],
                   ),
                 )
@@ -230,7 +230,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
-                                      item.type == 'video' ? '视频' : '图集(${item.images.length}张)',
+                                      item.type == 'operation' ? '操作成功 · -1次' : (item.type == 'video' ? '视频' : '图集(${item.images.length}张)'),
                                       style: const TextStyle(fontSize: 11, color: Color(0xFF8A9990)),
                                     ),
                                   ],
@@ -247,7 +247,7 @@ class _HistoryPageState extends State<HistoryPage> {
                               ],
                             ),
                           ),
-                          SizedBox(
+                          if (item.type != 'operation') SizedBox(
                             width: 92,
                             child: Column(
                               children: [

@@ -111,6 +111,7 @@ class _ImageResizePageState extends State<ImageResizePage> {
         name: '一链取影_${_preset.name}_${_preset.width}x${_preset.height}_${DateTime.now().millisecondsSinceEpoch}',
       );
       if (result is Map && result['isSuccess'] == false) throw Exception('相册写入失败');
+      await StorageService.addOperationHistory(category: '图片处理', title: '图片尺寸转换 ${_preset.width}×${_preset.height}');
       Fluttertoast.showToast(msg: '${_preset.width}×${_preset.height} 图片已保存');
     } catch (error) {
       final message = error.toString();

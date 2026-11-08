@@ -69,6 +69,22 @@ class StorageService {
     historyVersion.value++;
   }
 
+  static Future<void> addOperationHistory({
+    required String category,
+    required String title,
+  }) async {
+    await addHistory(HistoryItem(
+      id: 'operation_${DateTime.now().microsecondsSinceEpoch}',
+      platform: category,
+      type: 'operation',
+      title: '$title · 操作成功，已使用 1 次',
+      coverUrl: '',
+      videoUrl: '',
+      images: const [],
+      createdAt: DateTime.now(),
+    ));
+  }
+
   // 3. 读取所有历史记录
   static Future<List<HistoryItem>> getHistoryList() async {
     final sp = await SharedPreferences.getInstance();

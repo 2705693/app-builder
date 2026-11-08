@@ -222,6 +222,8 @@ class _ImageRepairPageState extends State<ImageRepairPage> {
         _currentRepairRect = null;
       });
 
+      await StorageService.addOperationHistory(category: '图片处理', title: '图片修复');
+
       Fluttertoast.showToast(msg: '修复完成！');
     } catch (e) {
       setState(() => _processing = false);
@@ -331,6 +333,10 @@ class _ImageRepairPageState extends State<ImageRepairPage> {
         name: '一链取影_${isMosaic ? '马赛克' : '标注'}_${DateTime.now().millisecondsSinceEpoch}',
       );
       if (result is Map && result['isSuccess'] == false) throw Exception('相册写入失败');
+      await StorageService.addOperationHistory(
+        category: '图片处理',
+        title: isMosaic ? '图片马赛克处理' : '图片标注',
+      );
       Fluttertoast.showToast(msg: isMosaic ? '马赛克图片已保存到相册' : '标注图片已保存到相册');
     } catch (error) {
       final message = error.toString();

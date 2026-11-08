@@ -256,6 +256,9 @@ class _HomePageState extends State<HomePage> {
       final url = await _apiService.processLocalVideo(
         File(_result!.videoUrl), endpoint, fields, image: image,
       );
+      final uid = await StorageService.getUserId();
+      await _apiService.consumeQuota(userId: uid, feature: endpoint.split('/').last);
+      await StorageService.addOperationHistory(category: '视频处理', title: resultLabel);
       final old = _result!;
       await _initVideoPlayer(url);
       if (!mounted) return;
@@ -521,6 +524,7 @@ class _HomePageState extends State<HomePage> {
         if (url.isEmpty) throw Exception('服务器没有返回 MP3 下载地址');
         final uid = await StorageService.getUserId();
         await _apiService.consumeQuota(userId: uid, feature: 'local_video_audio');
+        await StorageService.addOperationHistory(category: '音频处理', title: '本地视频转换 MP3');
         await _loadUserInfo();
         if (mounted) {
           setState(() => _extractingAudio = false);
