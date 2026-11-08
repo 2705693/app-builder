@@ -31,8 +31,10 @@ class _HomePageState extends State<HomePage> {
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _parsing = false;
+  bool _extractingAudio = false;
   ParseResult? _result;
   VideoPlayerController? _videoPlayerController;
+  VideoPlayerController? _audioPlayerController;
   ChewieController? _chewieController;
 
   int _remainingQuota = 10;
@@ -91,6 +93,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _inputCtrl.dispose();
     _disposePlayer();
+    _audioPlayerController?.dispose();
     super.dispose();
   }
 
@@ -332,6 +335,157 @@ class _HomePageState extends State<HomePage> {
     final url = _result!.videoUrl.isNotEmpty ? _result!.videoUrl : (_result!.images.isNotEmpty ? _result!.images.first : '');
     Clipboard.setData(ClipboardData(text: url));
     Fluttertoast.showToast(msg: '下载链接已复制到剪贴板');
+  }
+
+  // 6. 从解析结果提取标准 MP3 音频
+  Future<void> _extractAudio() async {
+    if (_result == null || _extractingAudio || _isLocalVideo) return;
+    var targetUrl = _result!.originUrl.trim();
+    if (targetUrl.isEmpty) targetUrl = _result!.videoUrl.trim();
+    if (!targetUrl.startsWith('http')) {
+      Fluttertoast.showToast(msg: '当前结果没有可用的音频来源');
+      return;
+    }
+
+    setState(() => _extractingAudio = true);
+    try {
+      final taskId = await _apiService.createAudioTask(url: targetUrl, quality: '192K');
+      Map<String, dynamic>? completed;
+      for (var attempt = 0; attempt < 60; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 1500));
+        final task = await _apiService.fetchAudioTask(taskId);
+        final status = (task['status'] ?? '').toString();
+        if (status == 'success') {
+          completed = task;
+          break;
+        }
+        if (status == 'failed') {
+          throw Exception((task['message'] ?? '音频提取失败').toString());
+        }
+      }
+      if (completed == null) throw Exception('音频提取超时，请稍后重试');
+      final url = (completed['download_url'] ?? '').toString();
+      if (url.isEmpty) throw Exception('服务器没有返回 MP3 下载地址');
+      if (mounted) {
+        setState(() => _extractingAudio = false);
+        await _showAudioActions(url, (completed['filename'] ?? '').toString());
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _extractingAudio = false);
+        _showErrorDialog(error.toString().replaceFirst('Exception: ', ''));
+      }
+    }
+  }
+
+  Future<void> _showAudioActions(String url, String filename) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const ListTile(
+              title: Text('MP3 音频已准备好', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text('文件将在服务器临时保留24小时'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.download_rounded, color: Color(0xFF127C44)),
+              title: const Text('保存到系统下载目录'),
+              onTap: () => Navigator.pop(ctx, 'save'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.play_circle_outline_rounded, color: Color(0xFF127C44)),
+              title: const Text('在线试听'),
+              onTap: () => Navigator.pop(ctx, 'play'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.link_rounded, color: Color(0xFF127C44)),
+              title: const Text('复制 MP3 下载链接'),
+              onTap: () => Navigator.pop(ctx, 'copy'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == 'save') {
+      await _saveAudio(url, filename);
+    } else if (action == 'copy') {
+      await Clipboard.setData(ClipboardData(text: url));
+      Fluttertoast.showToast(msg: 'MP3 下载链接已复制');
+    } else if (action == 'play') {
+      await _playAudio(url);
+    }
+  }
+
+  Future<void> _playAudio(String url) async {
+    await _audioPlayerController?.dispose();
+    final player = VideoPlayerController.networkUrl(Uri.parse(url));
+    _audioPlayerController = player;
+    try {
+      await player.initialize();
+      await player.play();
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('正在试听 MP3'),
+          content: const Text('音频正在播放，关闭窗口即可停止试听。'),
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('停止播放'))],
+        ),
+      );
+    } catch (_) {
+      Fluttertoast.showToast(msg: '音频播放失败，请改用下载或复制链接');
+    } finally {
+      await player.pause();
+      await player.dispose();
+      if (identical(_audioPlayerController, player)) _audioPlayerController = null;
+    }
+  }
+
+  Future<void> _saveAudio(String url, String filename) async {
+    double progress = 0;
+    String sizeText = '';
+    StateSetter? dialogSetState;
+    var dialogOpen = true;
+    BuildContext? dialogContext;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(builder: (_, setState) {
+        dialogContext = ctx;
+        dialogSetState = setState;
+        return DownloadDialog(
+          progress: progress,
+          sizeText: sizeText,
+          onCancel: () {
+            _downloadService.cancelDownload();
+            if (dialogOpen) Navigator.pop(ctx);
+          },
+        );
+      }),
+    ).whenComplete(() => dialogOpen = false);
+    try {
+      await _downloadService.downloadAndSaveAudio(
+        audioUrl: url,
+        filename: filename,
+        onProgress: (received, total, value) {
+          progress = value;
+          if (total > 0) {
+            sizeText = '${(received / 1048576).toStringAsFixed(1)} MB / ${(total / 1048576).toStringAsFixed(1)} MB';
+          }
+          if (dialogOpen) dialogSetState?.call(() {});
+        },
+      );
+      if (dialogOpen && dialogContext != null && dialogContext!.mounted) Navigator.pop(dialogContext!);
+      Fluttertoast.showToast(msg: 'MP3 已保存到“下载/一链取影”目录');
+    } catch (error) {
+      if (dialogOpen && dialogContext != null && dialogContext!.mounted) Navigator.pop(dialogContext!);
+      final message = error.toString().replaceFirst('Exception: ', '');
+      if (message != '已停止下载') _showErrorDialog(message);
+    }
   }
 
   @override
@@ -605,6 +759,26 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            if (!_isLocalVideo) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: OutlinedButton.icon(
+                  onPressed: _extractingAudio ? null : _extractAudio,
+                  icon: _extractingAudio
+                      ? const SizedBox(width: 17, height: 17, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.music_note_rounded, size: 18),
+                  label: Text(_extractingAudio ? '正在转换 MP3...' : '提取 MP3 纯音频'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF127C44),
+                    backgroundColor: const Color(0xFFEAF6EE),
+                    side: const BorderSide(color: Color(0xFFCBE7D5)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
           ],
 
           // 图集展示

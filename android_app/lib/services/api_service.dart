@@ -221,4 +221,50 @@ class ApiService {
     } catch (_) {}
     return null;
   }
+
+  // 8. 创建 MP3 音频提取任务
+  Future<String> createAudioTask({
+    required String url,
+    String quality = '192K',
+  }) async {
+    try {
+      final response = await _dio.post('/api/audio/parse', data: {
+        'url': url,
+        'quality': quality,
+      });
+      final body = response.data;
+      if (response.statusCode == 200 && body is Map && body['code'] == 0) {
+        final data = Map<String, dynamic>.from(body['data'] ?? {});
+        final taskId = (data['task_id'] ?? '').toString();
+        if (taskId.isNotEmpty) return taskId;
+      }
+      throw Exception(body is Map ? (body['message'] ?? '音频任务创建失败') : '音频任务创建失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null
+          ? data['detail'].toString()
+          : '音频服务连接失败');
+    }
+  }
+
+  // 9. 查询 MP3 音频提取任务
+  Future<Map<String, dynamic>> fetchAudioTask(String taskId) async {
+    try {
+      final response = await _dio.get('/api/audio/status/$taskId');
+      final body = response.data;
+      if (response.statusCode == 200 && body is Map && body['code'] == 0) {
+        final data = Map<String, dynamic>.from(body['data'] ?? {});
+        var downloadUrl = (data['download_url'] ?? '').toString();
+        if (downloadUrl.startsWith('/')) downloadUrl = '$baseUrl$downloadUrl';
+        data['download_url'] = downloadUrl;
+        return data;
+      }
+      throw Exception(body is Map ? (body['message'] ?? '音频任务查询失败') : '音频任务查询失败');
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(data is Map && data['detail'] != null
+          ? data['detail'].toString()
+          : '音频任务查询失败');
+    }
+  }
 }

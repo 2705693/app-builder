@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -7,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 typedef DownloadProgressCallback = void Function(int received, int total, double progress);
 
 class DownloadService {
+  static const MethodChannel _mediaChannel = MethodChannel('com.sd0739.chaoji_huiwan/media');
   final Dio _dio = Dio();
   CancelToken? _cancelToken;
   bool _isDownloading = false;
@@ -21,6 +23,47 @@ class DownloadService {
       throw Exception('相册写入失败，请检查权限');
     }
     return true;
+  }
+
+  // 下载 MP3 并写入 Android 系统“下载”目录。
+  Future<String> downloadAndSaveAudio({
+    required String audioUrl,
+    String? filename,
+    required DownloadProgressCallback onProgress,
+  }) async {
+    _isDownloading = true;
+    _cancelToken = CancelToken();
+    final safeName = (filename == null || filename.trim().isEmpty)
+        ? 'audio_${DateTime.now().millisecondsSinceEpoch}.mp3'
+        : (filename.toLowerCase().endsWith('.mp3') ? filename : '$filename.mp3');
+    final normalizedName = safeName.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+    final tempDir = await getTemporaryDirectory();
+    final tempPath = '${tempDir.path}/$normalizedName';
+
+    try {
+      await _dio.download(
+        audioUrl,
+        tempPath,
+        cancelToken: _cancelToken,
+        onReceiveProgress: (received, total) {
+          onProgress(received, total, total > 0 ? received / total : 0);
+        },
+      );
+      final savedUri = await _mediaChannel.invokeMethod<String>('saveAudioToDownloads', {
+        'filePath': tempPath,
+        'displayName': normalizedName,
+      });
+      if (savedUri == null || savedUri.isEmpty) throw Exception('系统下载目录写入失败');
+      return savedUri;
+    } on DioException catch (e) {
+      if (CancelToken.isCancel(e)) throw Exception('已停止下载');
+      throw Exception('音频下载失败: ${e.message}');
+    } finally {
+      _isDownloading = false;
+      _cancelToken = null;
+      final temp = File(tempPath);
+      if (await temp.exists()) await temp.delete();
+    }
   }
 
   // 停止 / 取消当前下载任务
