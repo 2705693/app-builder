@@ -115,6 +115,36 @@ class ApiService {
     throw Exception('图片修复服务异常');
   }
 
+  Future<String> portraitMatting({
+    required File imageFile,
+    required String userId,
+    required String backgroundColor,
+  }) async {
+    final form = FormData.fromMap({
+      'image': await MultipartFile.fromFile(imageFile.path, filename: 'portrait.jpg'),
+      'user_id': userId,
+      'bg_color': backgroundColor,
+    });
+    try {
+      final response = await _dio.post(
+        '/api/image/portrait_matting',
+        data: form,
+        options: Options(sendTimeout: const Duration(minutes: 2), receiveTimeout: const Duration(minutes: 2)),
+      );
+      final body = response.data;
+      if (response.statusCode == 200 && body is Map && body['code'] == 0) {
+        final payload = body['data'] is Map ? Map<String, dynamic>.from(body['data']) : <String, dynamic>{};
+        var url = (payload['url'] ?? '').toString();
+        if (url.startsWith('/')) url = '$baseUrl$url';
+        if (url.isNotEmpty) return url;
+      }
+      throw Exception(body is Map ? (body['detail'] ?? body['message'] ?? '人像抠图失败') : '人像抠图失败');
+    } on DioException catch (error) {
+      final body = error.response?.data;
+      throw Exception(body is Map ? (body['detail'] ?? body['message'] ?? '人像抠图服务连接失败') : '人像抠图服务连接失败');
+    }
+  }
+
   // 4. 同步用户额度信息
   Future<Map<String, dynamic>> fetchUserInfo(String userId) async {
     try {

@@ -15,6 +15,8 @@ import '../services/storage_service.dart';
 import '../widgets/download_dialog.dart';
 import 'image_repair_page.dart';
 import 'image_resize_page.dart';
+import 'id_photo_page.dart';
+import 'image_text_page.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int) onTabChange;
@@ -319,30 +321,34 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _showAreaProcessDialog() async {
-    var position = 'bottom_right';
-    var method = 'blur';
+    var position = 'dynamic_corners';
+    var method = 'delogo';
     final values = await showDialog<List<String>>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('局部处理'),
+          title: const Text('局部消除与微调'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<String>(
               value: position, decoration: const InputDecoration(labelText: '区域位置'),
               items: const [
+                DropdownMenuItem(value: 'dynamic_corners', child: Text('🌟 动态跳动水印 (左上+右下)')),
+                DropdownMenuItem(value: 'auto', child: Text('🎯 智能自动识别 (全视频检测)')),
+                DropdownMenuItem(value: 'bottom_right', child: Text('右下角')),
                 DropdownMenuItem(value: 'top_left', child: Text('左上角')),
                 DropdownMenuItem(value: 'top_right', child: Text('右上角')),
-                DropdownMenuItem(value: 'center', child: Text('画面中央')),
                 DropdownMenuItem(value: 'bottom_left', child: Text('左下角')),
-                DropdownMenuItem(value: 'bottom_right', child: Text('右下角')),
+                DropdownMenuItem(value: 'center', child: Text('画面中央')),
+                DropdownMenuItem(value: 'all_corners', child: Text('四个角全净')),
               ],
               onChanged: (value) => setDialogState(() => position = value!),
             ),
             DropdownButtonFormField<String>(
               value: method, decoration: const InputDecoration(labelText: '处理方式'),
               items: const [
-                DropdownMenuItem(value: 'blur', child: Text('柔化处理')),
-                DropdownMenuItem(value: 'delogo', child: Text('智能修补')),
+                DropdownMenuItem(value: 'zoom_crop', child: Text('🌟 无痕全景微扩 (0马赛克·首选)')),
+                DropdownMenuItem(value: 'delogo', child: Text('周围智能修补')),
+                DropdownMenuItem(value: 'blur', child: Text('柔化微模糊')),
               ],
               onChanged: (value) => setDialogState(() => method = value!),
             ),
@@ -857,6 +863,36 @@ class _HomePageState extends State<HomePage> {
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 40,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const IdPhotoPage())),
+                icon: const Icon(Icons.badge_outlined, size: 16, color: Color(0xFF0F8A63)),
+                label: const Text('智能证件照 · 抠图换底与职业装', style: TextStyle(color: Color(0xFF0F8A63), fontSize: 13, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(backgroundColor: const Color(0xFFECFDF5), side: BorderSide.none, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 40,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageTextPage())),
+                icon: const Icon(Icons.text_fields_rounded, size: 16, color: Color(0xFF2563EB)),
+                label: const Text('图片加文字 · 拖拽调色与字号', style: TextStyle(color: Color(0xFF2563EB), fontSize: 13, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(backgroundColor: const Color(0xFFEFF6FF), side: BorderSide.none, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 40,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ImageRepairPage())),
+                icon: const Icon(Icons.edit_note_rounded, size: 17, color: Color(0xFFB7791F)),
+                label: const Text('智能标注 · 圆圈箭头与马赛克', style: TextStyle(color: Color(0xFFB7791F), fontSize: 13, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(backgroundColor: const Color(0xFFFEF3C7), side: BorderSide.none, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               ),
             ),
             const SizedBox(height: 8),
