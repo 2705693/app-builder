@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -30,6 +31,12 @@ class _ImageTextPageState extends State<ImageTextPage> {
 
   static const _colors = [Colors.white, Colors.black, Color(0xFFEF4444), Color(0xFFEAB308), Color(0xFF10B981), Color(0xFF3B82F6), Color(0xFFF97316), Color(0xFFA855F7)];
 
+  Future<ui.Image> _decodeImage(File file) async {
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromList(await file.readAsBytes(), completer.complete);
+    return completer.future;
+  }
+
   @override
   void dispose() {
     _textController.dispose();
@@ -40,7 +47,7 @@ class _ImageTextPageState extends State<ImageTextPage> {
     final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 100);
     if (picked == null) return;
     final file = File(picked.path);
-    final image = await ui.decodeImageFromList(await file.readAsBytes());
+    final image = await _decodeImage(file);
     if (!mounted) return;
     setState(() {
       _source = file;
@@ -56,7 +63,7 @@ class _ImageTextPageState extends State<ImageTextPage> {
       await WidgetsBinding.instance.endOfFrame;
       final boundary = _exportKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) throw Exception('画布尚未准备好');
-      final sourceImage = await ui.decodeImageFromList(await _source!.readAsBytes());
+      final sourceImage = await _decodeImage(_source!);
       final ratio = sourceImage.width / boundary.size.width;
       final image = await boundary.toImage(pixelRatio: ratio.clamp(1, 8).toDouble());
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
